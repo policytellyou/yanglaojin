@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>养老金领取地测算工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#FF7D00',
+                        neutral: '#F5F7FA',
+                        dark: '#1D2129',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .step-active {
+                @apply bg-primary text-white border-primary;
+            }
+            .step-inactive {
+                @apply bg-white text-gray-400 border-gray-200;
+            }
+            .form-input-focus {
+                @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
+            }
+            .error-border {
+                @apply border-red-500 focus:border-red-500 focus:ring-red-200;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark">
+    <!-- 页面容器 -->
+    <div class="min-h-screen flex flex-col">
+        <!-- 头部 -->
+        <header class="bg-white shadow-sm">
+            <div class="container mx-auto px-4 py-5 sm:px-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa fa-pension text-primary text-2xl"></i>
+                        <h1 class="text-xl font-bold text-gray-800">养老金领取地测算工具</h1>
+                    </div>
+                    <button id="helpBtn" class="text-gray-500 hover:text-primary transition-colors">
+                        <i class="fa fa-question-circle text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="flex-grow container mx-auto px-4 py-8 sm:px-6">
+            <!-- 步骤指示器 -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between max-w-3xl mx-auto">
+                    <div class="flex flex-col items-center">
+                        <div id="step1Indicator" class="step-active w-10 h-10 rounded-full border-2 flex items-center justify-center font-medium mb-2 transition-all duration-300">1</div>
+                        <span class="text-sm text-gray-600">个人基础信息</span>
+                    </div>
+                    <div class="flex-1 max-w-[80px] h-1 bg-gray-200 mx-2">
+                        <div id="progress1-2" class="h-full bg-primary transition-all duration-500 w-0"></div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="step2Indicator" class="step-inactive w-10 h-10 rounded-full border-2 flex items-center justify-center font-medium mb-2 transition-all duration-300">2</div>
+                        <span class="text-sm text-gray-600">参保记录</span>
+                    </div>
+                    <div class="flex-1 max-w-[80px] h-1 bg-gray-200 mx-2">
+                        <div id="progress2-3" class="h-full bg-primary transition-all duration-500 w-0"></div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="step3Indicator" class="step-inactive w-10 h-10 rounded-full border-2 flex items-center justify-center font-medium mb-2 transition-all duration-300">3</div>
+                        <span class="text-sm text-gray-600">测算结果</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 表单卡片 -->
+            <div class="max-w-3xl mx-auto bg-white rounded-xl card-shadow overflow-hidden transition-all duration-500">
+                <!-- 步骤1：个人基础信息 -->
+                <div id="step1" class="p-6 sm:p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">个人基础信息</h2>
+                    
+                    <div id="step1Error" class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 hidden">
+                        <p class="text-sm text-red-700" id="step1ErrorMessage">
+                            <i class="fa fa-exclamation-circle mr-2"></i>请检查并完善以下信息
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">性别</label>
+                                <div class="flex items-center space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="gender" value="male" class="form-radio h-5 w-5 text-primary" checked>
+                                        <span class="ml-2">男</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="gender" value="female" class="form-radio h-5 w-5 text-primary">
+                                        <span class="ml-2">女</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="birthYear" class="block text-sm font-medium text-gray-700 mb-1">出生年月 <span class="text-red-500">*</span></label>
+                                <div class="flex space-x-2">
+                                    <input type="number" id="birthYear" min="1930" max="2010" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg form-input-focus" placeholder="年（例：1980）">
+                                    <select id="birthMonth" class="w-24 px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                                        <option value="">月</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="hukouProvince" class="block text-sm font-medium text-gray-700 mb-1">户籍所在省/直辖市 <span class="text-red-500">*</span></label>
+                            <select id="hukouProvince" class="w-full px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                                <option value="">请选择省份</option>
+                                <option value="北京市">北京市</option>
+                                <option value="天津市">天津市</option>
+                                <option value="河北省">河北省</option>
+                                <option value="山西省">山西省</option>
+                                <option value="内蒙古自治区">内蒙古自治区</option>
+                                <option value="辽宁省">辽宁省</option>
+                                <option value="吉林省">吉林省</option>
+                                <option value="黑龙江省">黑龙江省</option>
+                                <option value="上海市">上海市</option>
+                                <option value="江苏省">江苏省</option>
+                                <option value="浙江省">浙江省</option>
+                                <option value="安徽省">安徽省</option>
+                                <option value="福建省">福建省</option>
+                                <option value="江西省">江西省</option>
+                                <option value="山东省">山东省</option>
+                                <option value="河南省">河南省</option>
+                                <option value="湖北省">湖北省</option>
+                                <option value="湖南省">湖南省</option>
+                                <option value="广东省">广东省</option>
+                                <option value="广西壮族自治区">广西壮族自治区</option>
+                                <option value="海南省">海南省</option>
+                                <option value="重庆市">重庆市</option>
+                                <option value="四川省">四川省</option>
+                                <option value="贵州省">贵州省</option>
+                                <option value="云南省">云南省</option>
+                                <option value="西藏自治区">西藏自治区</option>
+                                <option value="陕西省">陕西省</option>
+                                <option value="甘肃省">甘肃省</option>
+                                <option value="青海省">青海省</option>
+                                <option value="宁夏回族自治区">宁夏回族自治区</option>
+                                <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="currentInsuredProvince" class="block text-sm font-medium text-gray-700 mb-1">当前参保省/直辖市 <span class="text-red-500">*</span></label>
+                            <select id="currentInsuredProvince" class="w-full px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                                <option value="">请选择省份</option>
+                                <option value="北京市">北京市</option>
+                                <option value="天津市">天津市</option>
+                                <option value="河北省">河北省</option>
+                                <option value="山西省">山西省</option>
+                                <option value="内蒙古自治区">内蒙古自治区</option>
+                                <option value="辽宁省">辽宁省</option>
+                                <option value="吉林省">吉林省</option>
+                                <option value="黑龙江省">黑龙江省</option>
+                                <option value="上海市">上海市</option>
+                                <option value="江苏省">江苏省</option>
+                                <option value="浙江省">浙江省</option>
+                                <option value="安徽省">安徽省</option>
+                                <option value="福建省">福建省</option>
+                                <option value="江西省">江西省</option>
+                                <option value="山东省">山东省</option>
+                                <option value="河南省">河南省</option>
+                                <option value="湖北省">湖北省</option>
+                                <option value="湖南省">湖南省</option>
+                                <option value="广东省">广东省</option>
+                                <option value="广西壮族自治区">广西壮族自治区</option>
+                                <option value="海南省">海南省</option>
+                                <option value="重庆市">重庆市</option>
+                                <option value="四川省">四川省</option>
+                                <option value="贵州省">贵州省</option>
+                                <option value="云南省">云南省</option>
+                                <option value="西藏自治区">西藏自治区</option>
+                                <option value="陕西省">陕西省</option>
+                                <option value="甘肃省">甘肃省</option>
+                                <option value="青海省">青海省</option>
+                                <option value="宁夏回族自治区">宁夏回族自治区</option>
+                                <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 户籍地=当前参保地时显示总缴费年限输入 -->
+                        <div id="totalContributionContainer" class="hidden">
+                            <label for="totalContributionYears" class="block text-sm font-medium text-gray-700 mb-1">累计缴费总年限（年） <span class="text-red-500">*</span></label>
+                            <div class="flex items-center">
+                                <input type="number" min="0" step="0.1" id="totalContributionYears" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg form-input-focus" placeholder="例如：15.5表示15年6个月">
+                                <span class="ml-2 text-gray-500">年</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button id="toStep2" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 transform hover:scale-[1.02] active:scale-[0.98]">
+                                下一步：填写参保记录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 步骤2：参保记录 -->
+                <div id="step2" class="p-6 sm:p-8 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">参保记录</h2>
+                    
+                    <div class="bg-blue-50 border-l-4 border-primary p-4 mb-6">
+                        <p class="text-sm text-blue-700">
+                            <i class="fa fa-info-circle mr-2"></i>请按时间顺序填写您在不同省份的参保信息，每个省份只能填写一条记录，包括首次参保时间和累计缴费年限。当前参保地信息已从个人基础信息中获取。
+                        </p>
+                    </div>
+                    
+                    <div id="step2Error" class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 hidden">
+                        <p class="text-sm text-red-700" id="step2ErrorMessage">
+                            <i class="fa fa-exclamation-circle mr-2"></i>请检查并完善以下信息
+                        </p>
+                    </div>
+                    
+                    <div id="insuranceRecords">
+                        <div class="record-item bg-neutral p-4 rounded-lg mb-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-medium">参保记录 1</h3>
+                                <button type="button" class="text-gray-400 hover:text-red-500 remove-record" disabled>
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">参保省份</label>
+                                    <select class="insured-province w-full px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                                        <option value="">请选择省份</option>
+                                        <option value="北京市">北京市</option>
+                                        <option value="天津市">天津市</option>
+                                        <option value="河北省">河北省</option>
+                                        <option value="山西省">山西省</option>
+                                        <option value="内蒙古自治区">内蒙古自治区</option>
+                                        <option value="辽宁省">辽宁省</option>
+                                        <option value="吉林省">吉林省</option>
+                                        <option value="黑龙江省">黑龙江省</option>
+                                        <option value="上海市">上海市</option>
+                                        <option value="江苏省">江苏省</option>
+                                        <option value="浙江省">浙江省</option>
+                                        <option value="安徽省">安徽省</option>
+                                        <option value="福建省">福建省</option>
+                                        <option value="江西省">江西省</option>
+                                        <option value="山东省">山东省</option>
+                                        <option value="河南省">河南省</option>
+                                        <option value="湖北省">湖北省</option>
+                                        <option value="湖南省">湖南省</option>
+                                        <option value="广东省">广东省</option>
+                                        <option value="广西壮族自治区">广西壮族自治区</option>
+                                        <option value="海南省">海南省</option>
+                                        <option value="重庆市">重庆市</option>
+                                        <option value="四川省">四川省</option>
+                                        <option value="贵州省">贵州省</option>
+                                        <option value="云南省">云南省</option>
+                                        <option value="西藏自治区">西藏自治区</option>
+                                        <option value="陕西省">陕西省</option>
+                                        <option value="甘肃省">甘肃省</option>
+                                        <option value="青海省">青海省</option>
+                                        <option value="宁夏回族自治区">宁夏回族自治区</option>
+                                        <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">首次参保时间</label>
+                                    <div class="flex space-x-2">
+                                        <input type="number" class="start-year flex-1 px-4 py-2 border border-gray-300 rounded-lg form-input-focus" placeholder="年">
+                                        <select class="start-month w-24 px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                                            <option value="">月</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                            <option value="8">8</option>
+                                            <option value="9">9</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">累计缴费年限（年）</label>
+                                    <div class="flex items-center">
+                                        <input type="number" min="0" step="0.1" class="contribution-years flex-1 px-4 py-2 border border-gray-300 rounded-lg form-input-focus" placeholder="例如：15.5表示15年6个月">
+                                        <span class="ml-2 text-gray-500">年</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="addRecord" class="w-full bg-white border border-dashed border-gray-300 hover:border-primary text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-300 mb-6">
+                        <i class="fa fa-plus mr-2"></i> 添加其他参保记录
+                    </button>
+                    
+                    <div class="flex space-x-4">
+                        <button id="backToStep1" class="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors duration-300">
+                            上一步
+                        </button>
+                        <button id="calculate" class="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 transform hover:scale-[1.02] active:scale-[0.98]">
+                            测算领取地
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 步骤3：补充最后参保时间（当有多个超过10年的参保地时） -->
+                <div id="step3" class="p-6 sm:p-8 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">补充参保信息</h2>
+                    
+                    <div class="bg-blue-50 border-l-4 border-primary p-4 mb-6">
+                        <p class="text-sm text-blue-700">
+                            <i class="fa fa-info-circle mr-2"></i>您在多个省份的参保年限均达到10年，请补充以下省份的最后参保时间，以便准确测算养老金领取地。
+                        </p>
+                    </div>
+                    
+                    <div id="lastInsuranceDates">
+                        <!-- 动态生成需要补充最后参保时间的省份表单 -->
+                    </div>
+                    
+                    <div class="flex space-x-4 mt-6">
+                        <button id="backToStep2FromStep3" class="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors duration-300">
+                            上一步
+                        </button>
+                        <button id="confirmLastDates" class="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300">
+                            确认并测算
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 步骤4：测算结果 -->
+                <div id="step4" class="p-6 sm:p-8 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">养老金领取地测算结果</h2>
+                    
+                    <div id="resultContainer" class="mb-6">
+                        <!-- 结果将在这里显示 -->
+                    </div>
+                    
+                    <!-- 参保记录分析说明 -->
+                    <div id="recordsAnalysis" class="mb-6 hidden">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">参保记录分析</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b">
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">参保省份</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">累计缴费年限</th>
+                                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">备注</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analysisTableBody">
+                                    <!-- 参保记录分析将在这里显示 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 广东省特殊处理：最后参保城市 -->
+                    <div id="guangdongCityContainer" class="mb-6 hidden">
+                        <div class="bg-blue-50 border-l-4 border-primary p-4 mb-4">
+                            <p class="text-sm text-blue-700">
+                                <i class="fa fa-info-circle mr-2"></i>由于您的领取地为广东省，请补充最后参保城市信息。
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label for="guangdongCity" class="block text-sm font-medium text-gray-700 mb-1">最后参保城市</label>
+                            <select id="guangdongCity" class="w-full px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                                <option value="">请选择城市</option>
+                                <option value="广州市">广州市</option>
+                                <option value="深圳市">深圳市</option>
+                                <option value="珠海市">珠海市</option>
+                                <option value="汕头市">汕头市</option>
+                                <option value="佛山市">佛山市</option>
+                                <option value="韶关市">韶关市</option>
+                                <option value="湛江市">湛江市</option>
+                                <option value="肇庆市">肇庆市</option>
+                                <option value="江门市">江门市</option>
+                                <option value="茂名市">茂名市</option>
+                                <option value="惠州市">惠州市</option>
+                                <option value="梅州市">梅州市</option>
+                                <option value="汕尾市">汕尾市</option>
+                                <option value="河源市">河源市</option>
+                                <option value="阳江市">阳江市</option>
+                                <option value="清远市">清远市</option>
+                                <option value="东莞市">东莞市</option>
+                                <option value="中山市">中山市</option>
+                                <option value="潮州市">潮州市</option>
+                                <option value="揭阳市">揭阳市</option>
+                                <option value="云浮市">云浮市</option>
+                            </select>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button id="confirmGuangdongCity" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300">
+                                确认城市
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-neutral p-4 rounded-lg mb-6 hidden" id="explanationContainer">
+                        <h3 class="font-medium mb-2">政策依据</h3>
+                        <div id="explanation" class="text-sm text-gray-700 space-y-2">
+                            <!-- 政策依据将在这里显示 -->
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button id="restart" class="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors duration-300">
+                            重新测算
+                        </button>
+                        <button id="backToStep2Btn" class="flex-1 bg-primary/10 hover:bg-primary/20 text-primary font-medium py-3 px-4 rounded-lg transition-colors duration-300 hidden">
+                            修改信息
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="bg-white border-t border-gray-200 mt-12">
+            <div class="container mx-auto px-4 py-6 sm:px-6">
+                <div class="text-center text-sm text-gray-500">
+                    <p>© 2023 养老金领取地测算工具 | 本工具仅供参考，实际请以社保部门规定为准</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 帮助模态框 -->
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto m-4">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">使用帮助</h3>
+                    <button id="closeHelp" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4 text-sm text-gray-700">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-1">什么是养老金领取地？</h4>
+                        <p>养老金领取地是指退休人员办理退休手续并领取养老金的地方，通常根据参保人的户籍所在地和参保记录确定。</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-1">如何填写参保记录？</h4>
+                        <p>请按时间顺序填写您在不同省份的参保记录，每个省份只能填写一条记录，包括首次参保年月和累计缴费年限（例如：15.5表示15年6个月）。</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-1">什么是临时账户？</h4>
+                        <p>根据规定，男性年满50周岁、女性年满40周岁后，在非户籍地首次参保建立的账户为临时账户，不具备作为养老金领取地的资格。</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-1">测算结果的依据是什么？</h4>
+                        <p>本工具根据《城镇企业职工基本养老保险关系转移接续暂行办法》及相关政策规定进行测算，仅供参考，实际请以社保部门审核结果为准。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面元素
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const step4 = document.getElementById('step4');
+        const toStep2Btn = document.getElementById('toStep2');
+        const backToStep1Btn = document.getElementById('backToStep1');
+        const calculateBtn = document.getElementById('calculate');
+        const backToStep2Btn = document.getElementById('backToStep2Btn');
+        const restartBtn = document.getElementById('restart');
+        const addRecordBtn = document.getElementById('addRecord');
+        const insuranceRecords = document.getElementById('insuranceRecords');
+        const helpBtn = document.getElementById('helpBtn');
+        const helpModal = document.getElementById('helpModal');
+        const closeHelpBtn = document.getElementById('closeHelp');
+        const confirmGuangdongCityBtn = document.getElementById('confirmGuangdongCity');
+        const guangdongCityContainer = document.getElementById('guangdongCityContainer');
+        const resultContainer = document.getElementById('resultContainer');
+        const explanationContainer = document.getElementById('explanationContainer');
+        const explanation = document.getElementById('explanation');
+        const hukouProvince = document.getElementById('hukouProvince');
+        const currentInsuredProvince = document.getElementById('currentInsuredProvince');
+        const guangdongCity = document.getElementById('guangdongCity');
+        const backToStep2FromStep3Btn = document.getElementById('backToStep2FromStep3');
+        const confirmLastDatesBtn = document.getElementById('confirmLastDates');
+        const lastInsuranceDatesContainer = document.getElementById('lastInsuranceDates');
+        const totalContributionContainer = document.getElementById('totalContributionContainer');
+        const totalContributionYears = document.getElementById('totalContributionYears');
+        const recordsAnalysis = document.getElementById('recordsAnalysis');
+        const analysisTableBody = document.getElementById('analysisTableBody');
+        const step1Error = document.getElementById('step1Error');
+        const step1ErrorMessage = document.getElementById('step1ErrorMessage');
+        const step2Error = document.getElementById('step2Error');
+        const step2ErrorMessage = document.getElementById('step2ErrorMessage');
+        const birthYearInput = document.getElementById('birthYear');
+        const birthMonthInput = document.getElementById('birthMonth');
+        
+        // 步骤指示器和进度条
+        const step1Indicator = document.getElementById('step1Indicator');
+        const step2Indicator = document.getElementById('step2Indicator');
+        const step3Indicator = document.getElementById('step3Indicator');
+        const progress1_2 = document.getElementById('progress1-2');
+        const progress2_3 = document.getElementById('progress2-3');
+        
+        // 表单数据
+        let formData = {
+            gender: 'male',
+            birthYear: '',
+            birthMonth: '',
+            hukouProvince: '',
+            currentInsuredProvince: '',
+            totalContributionYears: 0,
+            records: [],
+            directFromStep1: false,
+            qualifiedProvinces: [],
+            policyBasis: [],
+            recordsAnalysisData: [],
+            resultLocation: ''
+        };
+        
+        // 显示错误提示
+        function showStepError(stepErrorElement, messageElement, message, fieldsToHighlight = []) {
+            stepErrorElement.classList.remove('hidden');
+            messageElement.innerHTML = `<i class="fa fa-exclamation-circle mr-2"></i>${message}`;
+            
+            // 重置所有字段的边框样式
+            fieldsToHighlight.forEach(field => {
+                field.classList.remove('error-border');
+            });
+            
+            // 高亮显示错误字段
+            fieldsToHighlight.forEach(field => {
+                if (field) field.classList.add('error-border');
+            });
+            
+            // 滚动到错误提示
+            stepErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // 隐藏错误提示
+        function hideStepError(stepErrorElement, fieldsToHighlight = []) {
+            stepErrorElement.classList.add('hidden');
+            
+            // 重置所有字段的边框样式
+            fieldsToHighlight.forEach(field => {
+                if (field) field.classList.remove('error-border');
+            });
+        }
+        
+        // 监听户籍和当前参保地变化，控制总缴费年限输入显示
+        function checkHukouAndCurrentProvince() {
+            hideStepError(step1Error, [birthYearInput, birthMonthInput, hukouProvince, currentInsuredProvince, totalContributionYears]);
+            
+            if (hukouProvince.value && currentInsuredProvince.value && hukouProvince.value === currentInsuredProvince.value) {
+                totalContributionContainer.classList.remove('hidden');
+            } else {
+                totalContributionContainer.classList.add('hidden');
+                formData.totalContributionYears = 0;
+                totalContributionYears.value = '';
+            }
+        }
+        
+        hukouProvince.addEventListener('change', checkHukouAndCurrentProvince);
+        currentInsuredProvince.addEventListener('change', checkHukouAndCurrentProvince);
+        
+        // 为必填字段添加输入监听，实时移除错误状态
+        [birthYearInput, birthMonthInput, hukouProvince, currentInsuredProvince, totalContributionYears].forEach(field => {
+            field.addEventListener('input', () => {
+                hideStepError(step1Error, [birthYearInput, birthMonthInput, hukouProvince, currentInsuredProvince, totalContributionYears]);
+            });
+            field.addEventListener('change', () => {
+                hideStepError(step1Error, [birthYearInput, birthMonthInput, hukouProvince, currentInsuredProvince, totalContributionYears]);
+            });
+        });
+        
+        // 监听性别选择
+        document.querySelectorAll('input[name="gender"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                formData.gender = this.value;
+            });
+        });
+        
+        // 监听输入变化
+        document.getElementById('birthYear').addEventListener('input', function() {
+            formData.birthYear = this.value;
+        });
+        
+        document.getElementById('birthMonth').addEventListener('change', function() {
+            formData.birthMonth = this.value;
+        });
+        
+        totalContributionYears.addEventListener('input', function() {
+            formData.totalContributionYears = parseFloat(this.value) || 0;
+        });
+        
+        // 步骤切换动画
+        function goToStep1() {
+            step1.classList.remove('hidden');
+            step2.classList.add('hidden');
+            step3.classList.add('hidden');
+            step4.classList.add('hidden');
+            
+            step1Indicator.classList.remove('step-inactive');
+            step1Indicator.classList.add('step-active');
+            step2Indicator.classList.remove('step-active');
+            step2Indicator.classList.add('step-inactive');
+            step3Indicator.classList.remove('step-active');
+            step3Indicator.classList.add('step-inactive');
+            
+            progress1_2.style.width = '0%';
+            progress2_3.style.width = '0%';
+        }
+        
+        function goToStep2() {
+            // 收集当前表单数据
+            formData.birthYear = birthYearInput.value.trim();
+            formData.birthMonth = birthMonthInput.value;
+            formData.hukouProvince = hukouProvince.value;
+            formData.currentInsuredProvince = currentInsuredProvince.value;
+            
+            // 验证第一步信息
+            const errors = [];
+            const fieldsToHighlight = [];
+            
+            if (!formData.birthYear) {
+                errors.push("请填写出生年份");
+                fieldsToHighlight.push(birthYearInput);
+            } else if (isNaN(formData.birthYear) || formData.birthYear < 1930 || formData.birthYear > 2010) {
+                errors.push("请填写有效的出生年份（1930-2010）");
+                fieldsToHighlight.push(birthYearInput);
+            }
+            
+            if (!formData.birthMonth) {
+                errors.push("请选择出生月份");
+                fieldsToHighlight.push(birthMonthInput);
+            }
+            
+            if (!formData.hukouProvince) {
+                errors.push("请选择户籍所在省/直辖市");
+                fieldsToHighlight.push(hukouProvince);
+            }
+            
+            if (!formData.currentInsuredProvince) {
+                errors.push("请选择当前参保省/直辖市");
+                fieldsToHighlight.push(currentInsuredProvince);
+            }
+            
+            // 检查户籍地与当前参保地是否相同
+            const isSameProvince = formData.hukouProvince === formData.currentInsuredProvince;
+            
+            if (isSameProvince) {
+                formData.totalContributionYears = parseFloat(totalContributionYears.value) || 0;
+                
+                if (!totalContributionYears.value || formData.totalContributionYears <= 0) {
+                    errors.push("请填写有效的累计缴费总年限");
+                    fieldsToHighlight.push(totalContributionYears);
+                } else if (formData.totalContributionYears < 15) {
+                    // 未满15年，显示错误提示
+                    errors.push(`累计缴费年限需满15年，当前为${formData.totalContributionYears}年`);
+                    fieldsToHighlight.push(totalContributionYears);
+                }
+            }
+            
+            // 如果有错误，显示错误提示
+            if (errors.length > 0) {
+                showStepError(step1Error, step1ErrorMessage, errors.join('；'), fieldsToHighlight);
+                return;
+            }
+            
+            // 否则正常进入第二步或直接测算结果
+            formData.directFromStep1 = isSameProvince;
+            
+            if (isSameProvince) {
+                // 户籍地与参保地相同且缴费满15年，直接跳到结果页
+                calculateDirectResult();
+            } else {
+                // 户籍地与参保地不同，进入第二步
+                backToStep2Btn.classList.remove('hidden');
+                
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                step3.classList.add('hidden');
+                step4.classList.add('hidden');
+                
+                step1Indicator.classList.remove('step-active');
+                step1Indicator.classList.add('step-inactive');
+                step2Indicator.classList.remove('step-inactive');
+                step2Indicator.classList.add('step-active');
+                step3Indicator.classList.remove('step-active');
+                step3Indicator.classList.add('step-inactive');
+                
+                progress1_2.style.width = '100%';
+                progress2_3.style.width = '0%';
+            }
+        }
+        
+        function goToStep3(qualifiedProvinces) {
+            // 保存符合条件的省份
+            formData.qualifiedProvinces = qualifiedProvinces;
+            
+            // 清空容器
+            lastInsuranceDatesContainer.innerHTML = '';
+            
+            // 为每个需要补充信息的省份创建表单
+            qualifiedProvinces.forEach((province, index) => {
+                const dateForm = document.createElement('div');
+                dateForm.className = 'bg-neutral p-4 rounded-lg mb-4';
+                dateForm.innerHTML = `
+                    <h3 class="font-medium mb-3">${province.name}最后参保时间</h3>
+                    <div class="flex space-x-2">
+                        <input type="number" id="lastYear_${index}" min="${province.startYear}" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg form-input-focus" placeholder="年">
+                        <select id="lastMonth_${index}" class="w-24 px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                            <option value="">月</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                `;
+                lastInsuranceDatesContainer.appendChild(dateForm);
+            });
+            
+            // 显示步骤3
+            step1.classList.add('hidden');
+            step2.classList.add('hidden');
+            step3.classList.remove('hidden');
+            step4.classList.add('hidden');
+            
+            step1Indicator.classList.remove('step-active');
+            step1Indicator.classList.add('step-inactive');
+            step2Indicator.classList.remove('step-active');
+            step2Indicator.classList.add('step-inactive');
+            step3Indicator.classList.remove('step-inactive');
+            step3Indicator.classList.add('step-active');
+            
+            progress1_2.style.width = '100%';
+            progress2_3.style.width = '100%';
+        }
+        
+        function goToStep4() {
+            step1.classList.add('hidden');
+            step2.classList.add('hidden');
+            step3.classList.add('hidden');
+            step4.classList.remove('hidden');
+            
+            step1Indicator.classList.remove('step-active');
+            step1Indicator.classList.add('step-inactive');
+            step2Indicator.classList.remove('step-active');
+            step2Indicator.classList.add('step-inactive');
+            step3Indicator.classList.remove('step-inactive');
+            step3Indicator.classList.add('step-active');
+            
+            progress1_2.style.width = '100%';
+            progress2_3.style.width = '100%';
+        }
+        
+        // 当户籍省等于当前参保省时，直接计算结果
+        function calculateDirectResult() {
+            const hukouProvince = formData.hukouProvince;
+            formData.resultLocation = hukouProvince;
+            
+            // 政策依据
+            formData.policyBasis = [
+                "根据《城镇企业职工基本养老保险关系转移接续暂行办法》（国办发〔2009〕66号）规定：",
+                "1. 基本养老保险关系在户籍所在地的，由户籍所在地负责办理待遇领取手续，享受基本养老保险待遇。",
+                `您的户籍所在地和当前参保地均为${hukouProvince}，且累计缴费已满15年（${formData.totalContributionYears}年），因此养老金领取地为${hukouProvince}。`
+            ];
+            
+            // 准备参保记录分析数据（户籍地=当前参保地的情况）
+            formData.recordsAnalysisData = [{
+                province: hukouProvince,
+                contributionYears: formData.totalContributionYears,
+                isTemporaryAccount: false,
+                remarks: "户籍地与当前参保地一致，作为领取地"
+            }];
+            
+            // 显示参保记录分析
+            showRecordsAnalysis();
+            
+            // 检查是否为广东省
+            if (hukouProvince === "广东省") {
+                showGuangdongCityInput(hukouProvince);
+            } else {
+                showResult(hukouProvince);
+            }
+            
+            // 显示结果页
+            goToStep4();
+            
+            // 如果是直接从第一步跳过来的，隐藏"修改信息"按钮
+            if (formData.directFromStep1) {
+                backToStep2Btn.classList.add('hidden');
+            }
+        }
+        
+        // 检查省份是否已存在
+        function checkDuplicateProvince(province, currentIndex = -1) {
+            const records = document.querySelectorAll('.record-item');
+            let isDuplicate = false;
+            
+            records.forEach((record, index) => {
+                // 跳过当前正在编辑的记录
+                if (index === currentIndex) return;
+                
+                const selectedProvince = record.querySelector('.insured-province').value;
+                if (selectedProvince === province) {
+                    isDuplicate = true;
+                }
+            });
+            
+            return isDuplicate;
+        }
+        
+        // 收集参保记录并检查总缴费年限
+        function collectInsuranceRecords() {
+            formData.records = [];
+            let totalYears = 0;
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1; // 月份从0开始，+1得到实际月份
+            
+            // 重置错误提示
+            hideStepError(step2Error);
+            
+            const recordItems = document.querySelectorAll('.record-item');
+            const invalidFields = [];
+            let hasInvalidRecord = false;
+            
+            recordItems.forEach((item, index) => {
+                const province = item.querySelector('.insured-province').value;
+                const startYear = parseInt(item.querySelector('.start-year').value);
+                const startMonth = parseInt(item.querySelector('.start-month').value);
+                const contributionYears = parseFloat(item.querySelector('.contribution-years').value) || 0;
+                
+                // 验证记录的完整性
+                if (!province) {
+                    hasInvalidRecord = true;
+                    invalidFields.push(item.querySelector('.insured-province'));
+                }
+                
+                if (!startYear || isNaN(startYear) || startYear < 1950 || startYear > currentYear) {
+                    hasInvalidRecord = true;
+                    invalidFields.push(item.querySelector('.start-year'));
+                }
+                
+                if (!startMonth || isNaN(startMonth) || startMonth < 1 || startMonth > 12) {
+                    hasInvalidRecord = true;
+                    invalidFields.push(item.querySelector('.start-month'));
+                }
+                
+                if (contributionYears <= 0) {
+                    hasInvalidRecord = true;
+                    invalidFields.push(item.querySelector('.contribution-years'));
+                }
+                
+                // 判断是否为当前参保地
+                const isCurrent = province === formData.currentInsuredProvince;
+                
+                if (province && startYear && startMonth && contributionYears > 0) {
+                    // 累加总缴费年限
+                    totalYears += contributionYears;
+                    
+                    // 计算参保月数
+                    const totalMonths = Math.round(contributionYears * 12);
+                    
+                    // 计算默认结束时间（根据开始时间和缴费年限估算）
+                    let endYear = startYear;
+                    let endMonth = startMonth + totalMonths - 1;
+                    
+                    // 处理月份进位
+                    while (endMonth > 12) {
+                        endMonth -= 12;
+                        endYear += 1;
+                    }
+                    
+                    // 如果是当前参保地，结束时间设为当前时间
+                    if (isCurrent) {
+                        endYear = currentYear;
+                        endMonth = currentMonth;
+                    }
+                    
+                    formData.records.push({
+                        province,
+                        startYear,
+                        startMonth,
+                        endYear,
+                        endMonth,
+                        totalMonths,
+                        totalYears: contributionYears,
+                        isCurrent,
+                        // 用于判断最近参保时间的时间戳
+                        endTimestamp: new Date(endYear, endMonth - 1, 1).getTime()
+                    });
+                }
+            });
+            
+            // 检查记录是否完整
+            if (hasInvalidRecord) {
+                showStepError(step2Error, step2ErrorMessage, "请完善所有参保记录信息，确保数据有效", invalidFields);
+                return false;
+            }
+            
+            // 检查总缴费年限是否满15年
+            if (totalYears < 15) {
+                showStepError(step2Error, step2ErrorMessage, `您的累计缴费总年限为${totalYears.toFixed(1)}年，尚未缴满15年，无法确定养老金领取地。`, 
+                    Array.from(document.querySelectorAll('.contribution-years')));
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 添加参保记录
+        function addInsuranceRecord() {
+            const recordCount = document.querySelectorAll('.record-item').length + 1;
+            
+            const newRecord = document.createElement('div');
+            newRecord.className = 'record-item bg-neutral p-4 rounded-lg mb-4 transform transition-all duration-300 hover:shadow-md';
+            newRecord.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-medium">参保记录 ${recordCount}</h3>
+                    <button type="button" class="text-gray-400 hover:text-red-500 remove-record transition-colors">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">参保省份</label>
+                        <select class="insured-province w-full px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                            <option value="">请选择省份</option>
+                            <option value="北京市">北京市</option>
+                            <option value="天津市">天津市</option>
+                            <option value="河北省">河北省</option>
+                            <option value="山西省">山西省</option>
+                            <option value="内蒙古自治区">内蒙古自治区</option>
+                            <option value="辽宁省">辽宁省</option>
+                            <option value="吉林省">吉林省</option>
+                            <option value="黑龙江省">黑龙江省</option>
+                            <option value="上海市">上海市</option>
+                            <option value="江苏省">江苏省</option>
+                            <option value="浙江省">浙江省</option>
+                            <option value="安徽省">安徽省</option>
+                            <option value="福建省">福建省</option>
+                            <option value="江西省">江西省</option>
+                            <option value="山东省">山东省</option>
+                            <option value="河南省">河南省</option>
+                            <option value="湖北省">湖北省</option>
+                            <option value="湖南省">湖南省</option>
+                            <option value="广东省">广东省</option>
+                            <option value="广西壮族自治区">广西壮族自治区</option>
+                            <option value="海南省">海南省</option>
+                            <option value="重庆市">重庆市</option>
+                            <option value="四川省">四川省</option>
+                            <option value="贵州省">贵州省</option>
+                            <option value="云南省">云南省</option>
+                            <option value="西藏自治区">西藏自治区</option>
+                            <option value="陕西省">陕西省</option>
+                            <option value="甘肃省">甘肃省</option>
+                            <option value="青海省">青海省</option>
+                            <option value="宁夏回族自治区">宁夏回族自治区</option>
+                            <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">首次参保时间</label>
+                        <div class="flex space-x-2">
+                            <input type="number" class="start-year flex-1 px-4 py-2 border border-gray-300 rounded-lg form-input-focus" placeholder="年">
+                            <select class="start-month w-24 px-4 py-2 border border-gray-300 rounded-lg form-input-focus">
+                                <option value="">月</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">累计缴费年限（年）</label>
+                        <div class="flex items-center">
+                            <input type="number" min="0" step="0.1" class="contribution-years flex-1 px-4 py-2 border border-gray-300 rounded-lg form-input-focus" placeholder="例如：15.5表示15年6个月">
+                            <span class="ml-2 text-gray-500">年</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            insuranceRecords.appendChild(newRecord);
+            
+            // 添加省份选择监听，检查重复
+            const provinceSelect = newRecord.querySelector('.insured-province');
+            const recordIndex = document.querySelectorAll('.record-item').length - 1;
+            
+            provinceSelect.addEventListener('change', function() {
+                if (checkDuplicateProvince(this.value, recordIndex)) {
+                    alert('每个省份只能填写一条参保记录，请选择其他省份');
+                    this.value = '';
+                }
+            });
+            
+            // 添加输入监听，实时移除错误状态
+            const inputs = newRecord.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    hideStepError(step2Error);
+                });
+                input.addEventListener('change', () => {
+                    hideStepError(step2Error);
+                });
+            });
+            
+            // 添加删除功能
+            newRecord.querySelector('.remove-record').addEventListener('click', function() {
+                newRecord.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    newRecord.remove();
+                    updateRecordNumbers();
+                }, 300);
+            });
+            
+            // 确保至少有一个记录不能删除
+            updateRemoveButtons();
+        }
+        
+        // 更新记录编号
+        function updateRecordNumbers() {
+            const records = document.querySelectorAll('.record-item');
+            records.forEach((record, index) => {
+                record.querySelector('h3').textContent = `参保记录 ${index + 1}`;
+                
+                // 更新省份选择监听，确保重复检查正确
+                const provinceSelect = record.querySelector('.insured-province');
+                
+                // 先移除旧的事件监听
+                const newSelect = provinceSelect.cloneNode(true);
+                provinceSelect.parentNode.replaceChild(newSelect, provinceSelect);
+                
+                // 添加新的事件监听
+                newSelect.addEventListener('change', function() {
+                    if (checkDuplicateProvince(this.value, index)) {
+                        alert('每个省份只能填写一条参保记录，请选择其他省份');
+                        this.value = '';
+                    }
+                });
+            });
+            updateRemoveButtons();
+        }
+        
+        // 更新删除按钮状态
+        function updateRemoveButtons() {
+            const records = document.querySelectorAll('.record-item');
+            const removeButtons = document.querySelectorAll('.remove-record');
+            
+            if (records.length <= 1) {
+                removeButtons.forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                });
+            } else {
+                removeButtons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                });
+            }
+        }
+        
+        // 处理最后参保时间确认
+        function handleLastDatesConfirm() {
+            const qualifiedProvinces = formData.qualifiedProvinces;
+            let allFieldsFilled = true;
+            
+            // 收集用户输入的最后参保时间
+            qualifiedProvinces.forEach((province, index) => {
+                const lastYear = parseInt(document.getElementById(`lastYear_${index}`).value);
+                const lastMonth = parseInt(document.getElementById(`lastMonth_${index}`).value);
+                
+                if (!lastYear || !lastMonth) {
+                    allFieldsFilled = false;
+                    return;
+                }
+                
+                // 更新最后参保时间
+                province.lastYear = lastYear;
+                province.lastMonth = lastMonth;
+                province.lastTimestamp = new Date(lastYear, lastMonth - 1, 1).getTime();
+                province.lastDate = `${lastYear}年${lastMonth}月`;
+            });
+            
+            if (!allFieldsFilled) {
+                alert('请填写完整的最后参保时间');
+                return;
+            }
+            
+            // 按最后参保时间排序
+            qualifiedProvinces.sort((a, b) => b.lastTimestamp - a.lastTimestamp);
+            const resultProvince = qualifiedProvinces[0].name;
+            formData.resultLocation = resultProvince;
+            
+            // 完善政策依据
+            formData.policyBasis.push(`您在${qualifiedProvinces.map(p => p.name).join('、')}的参保年限均达到10年，其中${resultProvince}为最后参保地，因此养老金领取地为${resultProvince}。`);
+            
+            // 为领取地添加特殊备注
+            formData.recordsAnalysisData.forEach(record => {
+                if (record.province === resultProvince) {
+                    record.remarks = "缴费满10年且为最后参保地，作为领取地";
+                }
+            });
+            
+            // 显示参保记录分析
+            showRecordsAnalysis();
+            
+            // 检查是否为广东省
+            if (resultProvince === "广东省") {
+                showGuangdongCityInput(resultProvince);
+            } else {
+                showResult(resultProvince);
+            }
+            
+            // 进入结果页面
+            goToStep4();
+        }
+        
+        // 显示参保记录分析
+        function showRecordsAnalysis() {
+            recordsAnalysis.classList.remove('hidden');
+            analysisTableBody.innerHTML = '';
+            
+            formData.recordsAnalysisData.forEach(record => {
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+                
+                // 构建备注信息
+                let remarks = record.remarks || '';
+                if (record.isTemporaryAccount) {
+                    remarks = '临时账户（不计入领取地）';
+                }
+                
+                row.innerHTML = `
+                    <td class="py-3 px-4 text-sm">${record.province}</td>
+                    <td class="py-3 px-4 text-sm">${record.contributionYears}年</td>
+                    <td class="py-3 px-4 text-sm">${remarks}</td>
+                `;
+                
+                analysisTableBody.appendChild(row);
+            });
+        }
+        
+        // 计算养老金领取地（核心逻辑）
+        function calculatePensionLocation() {
+            // 收集参保记录并检查总缴费年限
+            if (!collectInsuranceRecords()) {
+                return;
+            }
+            
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1;
+            const birthYear = parseInt(formData.birthYear);
+            const birthMonth = parseInt(formData.birthMonth);
+            const hukouProvince = formData.hukouProvince;
+            const currentInsuredProvince = formData.currentInsuredProvince;
+            const isMale = formData.gender === 'male';
+            
+            // 重置政策依据和分析数据
+            formData.policyBasis = [
+                "根据《城镇企业职工基本养老保险关系转移接续暂行办法》（国办发〔2009〕66号）规定："
+            ];
+            formData.recordsAnalysisData = [];
+            
+            // 第一步：判断当前参保省是否属于户籍省（这一步在goToStep2中已经处理）
+            
+            // 第二步：判断户籍地以外参保省是否属于临时账户，排除临时账户
+            const nonHukouProvinces = {};
+            
+            formData.records.forEach(record => {
+                // 计算首次参保时的年龄（精确到月）
+                const ageYears = record.startYear - birthYear;
+                const ageMonths = record.startMonth - birthMonth;
+                let firstInsuredAge = ageYears;
+                
+                // 计算精确年龄（如50岁3个月）
+                if (ageMonths > 0) {
+                    firstInsuredAge += ageMonths / 12;
+                } else if (ageMonths < 0) {
+                    firstInsuredAge -= (12 + ageMonths) / 12;
+                }
+                
+                // 判断是否为临时账户（达到或超过年龄界限）
+                const isTemporaryAccount = (isMale && firstInsuredAge >= 50) || (!isMale && firstInsuredAge >= 40);
+                
+                // 添加到分析数据
+                let remarks = record.isCurrent ? "当前参保地" : "";
+                if (record.province === hukouProvince) {
+                    remarks = remarks ? remarks + "，户籍地" : "户籍地";
+                }
+                
+                formData.recordsAnalysisData.push({
+                    province: record.province,
+                    contributionYears: record.totalYears,
+                    isTemporaryAccount: isTemporaryAccount,
+                    remarks: remarks
+                });
+                
+                // 只处理非户籍地的参保记录
+                if (record.province !== hukouProvince && !isTemporaryAccount) {
+                    if (!nonHukouProvinces[record.province]) {
+                        nonHukouProvinces[record.province] = {
+                            totalMonths: 0,
+                            totalYears: 0,
+                            startYear: record.startYear,
+                            startMonth: record.startMonth,
+                            lastTimestamp: 0,
+                            lastDate: '',
+                            isCurrent: false,
+                            name: record.province
+                        };
+                    }
+                    
+                    // 累加参保时间
+                    nonHukouProvinces[record.province].totalMonths += record.totalMonths;
+                    nonHukouProvinces[record.province].totalYears = (nonHukouProvinces[record.province].totalMonths / 12).toFixed(1);
+                    
+                    // 记录最后参保时间和是否为当前参保地
+                    if (record.endTimestamp > nonHukouProvinces[record.province].lastTimestamp) {
+                        nonHukouProvinces[record.province].lastTimestamp = record.endTimestamp;
+                        nonHukouProvinces[record.province].lastDate = `${record.endYear}年${record.endMonth}月`;
+                    }
+                    
+                    // 如果是当前参保地，标记
+                    if (record.isCurrent) {
+                        nonHukouProvinces[record.province].isCurrent = true;
+                    }
+                }
+            });
+            
+            // 第三步：判断是否有缴费超过10年的省份（120个月）
+            const qualifiedProvinces = [];
+            Object.keys(nonHukouProvinces).forEach(province => {
+                if (nonHukouProvinces[province].totalMonths >= 120) {
+                    qualifiedProvinces.push(nonHukouProvinces[province]);
+                    
+                    // 添加备注：缴费满10年
+                    formData.recordsAnalysisData.forEach(record => {
+                        if (record.province === province) {
+                            record.remarks = "缴费满10年";
+                        }
+                    });
+                }
+            });
+            
+            // 添加政策依据
+            formData.policyBasis.push(`2. 基本养老保险关系不在户籍所在地，而在其基本养老保险关系所在地累计缴费年限满10年的，在该地办理待遇领取手续。`);
+            formData.policyBasis.push(`3. 基本养老保险关系不在户籍所在地，且在其基本养老保险关系所在地累计缴费年限不满10年的，将其基本养老保险关系转回上一个缴费年限满10年的原参保地办理待遇领取手续。`);
+            formData.policyBasis.push(`4. 基本养老保险关系不在户籍所在地，且在每个参保地的累计缴费年限均不满10年的，将其基本养老保险关系及相应资金归集到户籍所在地，由户籍所在地按规定办理待遇领取手续。`);
+            
+            if (qualifiedProvinces.length === 1) {
+                // 只有一个省份缴费超过10年
+                const resultProvince = qualifiedProvinces[0].name;
+                formData.resultLocation = resultProvince;
+                
+                formData.policyBasis.push(`您在${resultProvince}的参保年限达到10年（累计${qualifiedProvinces[0].totalYears}年），因此养老金领取地为${resultProvince}。`);
+                
+                // 为领取地添加特殊备注
+                formData.recordsAnalysisData.forEach(record => {
+                    if (record.province === resultProvince) {
+                        record.remarks = "缴费满10年，作为领取地";
+                    }
+                });
+                
+                // 显示参保记录分析
+                showRecordsAnalysis();
+                
+                // 检查是否为广东省
+                if (resultProvince === "广东省") {
+                    showGuangdongCityInput(resultProvince);
+                } else {
+                    showResult(resultProvince);
+                }
+                goToStep4();
+            } else if (qualifiedProvinces.length > 1) {
+                // 多个省份缴费超过10年，需要询问最后参保时间
+                goToStep3(qualifiedProvinces);
+            } else {
+                // 没有缴费超过10年的省份，领取地为户籍地
+                formData.resultLocation = hukouProvince;
+                
+                formData.policyBasis.push(`您在非户籍地参保省份中，没有任何一个省份的参保年限达到10年，因此养老金领取地为户籍地：${hukouProvince}。`);
+                
+                // 为户籍地添加特殊备注
+                formData.recordsAnalysisData.forEach(record => {
+                    if (record.province === hukouProvince) {
+                        record.remarks = "户籍地，作为领取地";
+                    }
+                });
+                
+                // 显示参保记录分析
+                showRecordsAnalysis();
+                
+                // 检查是否为广东省
+                if (hukouProvince === "广东省") {
+                    showGuangdongCityInput(hukouProvince);
+                } else {
+                    showResult(hukouProvince);
+                }
+                goToStep4();
+            }
+        }
+        
+        // 显示广东省城市选择
+        function showGuangdongCityInput(province) {
+            // 显示广东省城市选择
+            guangdongCityContainer.classList.remove('hidden');
+            explanationContainer.classList.add('hidden');
+            
+            // 清空结果容器
+            resultContainer.innerHTML = `
+                <div class="bg-blue-50 border-l-4 border-primary p-4 mb-4">
+                    <p class="text-sm text-blue-700">
+                        <i class="fa fa-info-circle mr-2"></i>根据测算，您的养老金领取地省份为${province}。
+                    </p>
+                </div>
+            `;
+        }
+        
+        // 处理广东省城市确认
+        function handleGuangdongCityConfirm() {
+            const city = guangdongCity.value;
+            if (!city) {
+                alert('请选择最后参保城市');
+                return;
+            }
+            
+            // 更新最终结果位置
+            formData.resultLocation = city;
+            
+            // 完善政策依据
+            formData.policyBasis.push(`根据广东省相关规定，您的养老金领取地具体为：${city}。`);
+            
+            // 更新参保记录分析中广东省的备注
+            formData.recordsAnalysisData.forEach(record => {
+                if (record.province === "广东省") {
+                    record.remarks = `缴费满10年，作为领取地，具体为${city}`;
+                }
+            });
+            showRecordsAnalysis();
+            
+            // 显示最终结果
+            showResult(city);
+        }
+        
+        // 显示最终结果
+        function showResult(location) {
+            guangdongCityContainer.classList.add('hidden');
+            explanationContainer.classList.remove('hidden');
+            
+            // 构建结果HTML
+            resultContainer.innerHTML = `
+                <div class="bg-green-50 border-l-4 border-green-500 p-5 rounded-lg mb-6 transform transition-all duration-500 hover:shadow-lg">
+                    <h3 class="text-lg font-medium text-green-800 mb-2">您的养老金领取地为：</h3>
+                    <p class="text-2xl font-bold text-green-700">${location}</p>
+                </div>
+            `;
+            
+            // 显示政策依据
+            explanation.innerHTML = '';
+            formData.policyBasis.forEach(text => {
+                const p = document.createElement('p');
+                p.innerHTML = text;
+                explanation.appendChild(p);
+            });
+        }
+        
+        // 事件监听
+        toStep2Btn.addEventListener('click', goToStep2);
+        backToStep1Btn.addEventListener('click', goToStep1);
+        calculateBtn.addEventListener('click', calculatePensionLocation);
+        backToStep2Btn.addEventListener('click', goToStep2);
+        backToStep2FromStep3Btn.addEventListener('click', goToStep2);
+        confirmLastDatesBtn.addEventListener('click', handleLastDatesConfirm);
+        
+        restartBtn.addEventListener('click', function() {
+            // 重置表单
+            document.getElementById('birthYear').value = '';
+            document.getElementById('birthMonth').value = '';
+            hukouProvince.value = '';
+            currentInsuredProvince.value = '';
+            guangdongCity.value = '';
+            totalContributionYears.value = '';
+            document.querySelector('input[name="gender"][value="male"]').checked = true;
+            
+            // 清空参保记录，只保留一条
+            const records = document.querySelectorAll('.record-item');
+            for (let i = 1; i < records.length; i++) {
+                records[i].remove();
+            }
+            
+            // 重置第一条记录
+            const firstRecord = document.querySelector('.record-item');
+            firstRecord.querySelector('.insured-province').value = '';
+            firstRecord.querySelector('.start-year').value = '';
+            firstRecord.querySelector('.start-month').value = '';
+            firstRecord.querySelector('.contribution-years').value = '';
+            
+            // 重置数据
+            formData = {
+                gender: 'male',
+                birthYear: '',
+                birthMonth: '',
+                hukouProvince: '',
+                currentInsuredProvince: '',
+                totalContributionYears: 0,
+                records: [],
+                directFromStep1: false,
+                qualifiedProvinces: [],
+                policyBasis: [],
+                recordsAnalysisData: [],
+                resultLocation: ''
+            };
+            
+            // 重置显示状态
+            totalContributionContainer.classList.add('hidden');
+            recordsAnalysis.classList.add('hidden');
+            hideStepError(step1Error, [birthYearInput, birthMonthInput, hukouProvince, currentInsuredProvince, totalContributionYears]);
+            hideStepError(step2Error);
+            
+            // 重置步骤
+            goToStep1();
+            
+            // 重置结果相关
+            guangdongCityContainer.classList.add('hidden');
+            backToStep2Btn.classList.remove('hidden');
+        });
+        
+        addRecordBtn.addEventListener('click', addInsuranceRecord);
+        
+        // 为第一条记录添加省份选择监听
+        document.querySelector('.insured-province').addEventListener('change', function() {
+            if (checkDuplicateProvince(this.value, 0)) {
+                alert('每个省份只能填写一条参保记录，请选择其他省份');
+                this.value = '';
+            }
+        });
+        
+        // 为第一条记录添加输入监听，实时移除错误状态
+        const firstRecordInputs = document.querySelectorAll('.record-item:first-child input, .record-item:first-child select');
+        firstRecordInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                hideStepError(step2Error);
+            });
+            input.addEventListener('change', () => {
+                hideStepError(step2Error);
+            });
+        });
+        
+        // 初始删除按钮事件
+        document.querySelector('.remove-record').addEventListener('click', function() {
+            // 至少保留一条记录
+            if (document.querySelectorAll('.record-item').length > 1) {
+                this.closest('.record-item').remove();
+                updateRecordNumbers();
+                updateRemoveButtons();
+            }
+        });
+        
+        // 帮助模态框
+        helpBtn.addEventListener('click', function() {
+            helpModal.classList.remove('hidden');
+        });
+        
+        closeHelpBtn.addEventListener('click', function() {
+            helpModal.classList.add('hidden');
+        });
+        
+        helpModal.addEventListener('click', function(e) {
+            if (e.target === helpModal) {
+                helpModal.classList.add('hidden');
+            }
+        });
+        
+        // 广东省城市确认按钮事件
+        confirmGuangdongCityBtn.addEventListener('click', handleGuangdongCityConfirm);
+    </script>
+</body>
+</html>
