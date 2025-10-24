@@ -414,6 +414,16 @@
             color: #e74c3c;
             font-weight: bold;
         }
+        
+        .early-warning {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #ffeaea;
+            border-radius: 4px;
+            border-left: 4px solid #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -503,9 +513,6 @@
                         <option value="青海省">青海省</option>
                         <option value="宁夏回族自治区">宁夏回族自治区</option>
                         <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
-                        <option value="台湾省">台湾省</option>
-                        <option value="香港特别行政区">香港特别行政区</option>
-                        <option value="澳门特别行政区">澳门特别行政区</option>
                     </select>
                     <div class="error" id="hukouProvinceError">请选择户籍所在省份</div>
                 </div>
@@ -545,9 +552,6 @@
                         <option value="青海省">青海省</option>
                         <option value="宁夏回族自治区">宁夏回族自治区</option>
                         <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
-                        <option value="台湾省">台湾省</option>
-                        <option value="香港特别行政区">香港特别行政区</option>
-                        <option value="澳门特别行政区">澳门特别行政区</option>
                     </select>
                     <div class="error" id="currentProvinceError">请选择当前参保省份</div>
                 </div>
@@ -616,11 +620,12 @@
             <h2>测算结果</h2>
             
             <div class="early-result">
-                <h3>您距离退休年龄还有半年以上距离</h3>
+                <div class="early-warning">
+                    您距离退休年龄超过半年时间，目前无法测算您的养老金领取地，请接近退休年龄时再进行测算。
+                </div>
                 <div id="earlyResultContent">
                     <!-- 早期结果将动态生成在这里 -->
                 </div>
-                <p style="margin-top: 15px; color: #e74c3c; font-weight: bold;">目前无法测算您的养老金领取地，请接近退休年龄时再进行测算。</p>
             </div>
             
             <button type="button" id="closeEarlyResultModal" class="btn-next" style="margin-top: 20px;">确定</button>
@@ -967,9 +972,6 @@
                                 <option value="青海省">青海省</option>
                                 <option value="宁夏回族自治区">宁夏回族自治区</option>
                                 <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
-                                <option value="台湾省">台湾省</option>
-                                <option value="香港特别行政区">香港特别行政区</option>
-                                <option value="澳门特别行政区">澳门特别行政区</option>
                             </select>
                             <div class="error">请选择参保省份</div>
                         </div>
