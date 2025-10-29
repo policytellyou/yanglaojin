@@ -1155,611 +1155,313 @@
                 
                 return records;
             }
+     
+    // 计算退休信息
+    function calculateRetirementInfo(data) {
+        const birthDate = new Date(data.birthDate);
+        const birthYear = birthDate.getFullYear();
+        const birthMonth = birthDate.getMonth() + 1; // 月份从0开始，需要+1
+        
+        let originalRetirementAge = 0;
+        let delayMonths = 0;
+        let retirementAge = 0;
+        let retirementYear = 0;
+        let retirementMonth = 0;
+        
+        // 判断退休年龄和延迟规则
+        if (data.gender === 'male') {
+            // 男性，原法定退休年龄60周岁
+            originalRetirementAge = 60;
             
-            // 计算退休信息
-            function calculateRetirementInfo(data) {
-                const birthDate = new Date(data.birthDate);
-                const birthYear = birthDate.getFullYear();
-                const birthMonth = birthDate.getMonth() + 1; // 月份从0开始，需要+1
+            // 计算延迟退休时间
+            if (birthYear <= 1965) {
+                // 1965年及以前出生，不延迟
+                delayMonths = 0;
+            } else if (birthYear >= 1977) {
+                // 1977年及以后出生，延迟到63岁退休
+                delayMonths = 36; // 3年=36个月
+            } else {
+                // 1966年至1976年出生，每4个月延迟1个月
+                const startYear = 1965;
+                const delayPerPeriod = 1; // 每期延迟月数
+                const monthsPerPeriod = 4; // 每期间隔月数
                 
-                let originalRetirementAge = 0;
-                let delayMonths = 0;
-                let retirementAge = 0;
-                let retirementYear = 0;
-                let retirementMonth = 0;
+                // 计算出生月份在延迟周期中的位置
+                const totalMonthsFromStart = (birthYear - startYear) * 12 + (birthMonth - 1);
+                // 修正：周期数需要+1
+                const periods = Math.floor(totalMonthsFromStart / monthsPerPeriod) + 1;
+                delayMonths = periods * delayPerPeriod;
                 
-                // 判断退休年龄和延迟规则
-                if (data.gender === 'male') {
-                    // 男性，原法定退休年龄60周岁
-                    originalRetirementAge = 60;
-                    
-                    // 计算延迟退休时间
-                    if (birthYear <= 1965) {
-                        // 1965年及以前出生，不延迟
-                        delayMonths = 0;
-                    } else if (birthYear >= 1977) {
-                        // 1977年及以后出生，延迟到63岁退休
-                        delayMonths = 36; // 3年=36个月
-                    } else {
-                        // 1966年至1976年出生，每4个月延迟1个月
-                        const startYear = 1965;
-                        const delayPerPeriod = 1; // 每期延迟月数
-                        const monthsPerPeriod = 4; // 每期间隔月数
-                        
-                        // 计算出生月份在延迟周期中的位置
-                        const totalMonthsFromStart = (birthYear - startYear) * 12 + (birthMonth - 1);
-                        const periods = Math.floor(totalMonthsFromStart / monthsPerPeriod);
-                        delayMonths = periods * delayPerPeriod;
-                        
-                        // 最大延迟36个月
-                        if (delayMonths > 36) {
-                            delayMonths = 36;
-                        }
-                    }
+                // 最大延迟36个月
+                if (delayMonths > 36) {
+                    delayMonths = 36;
+                }
+            }
+        } else {
+            // 女性
+            if (data.jobType === 'management') {
+                // 管理岗/技术岗/灵活就业人员，原法定退休年龄55周岁
+                originalRetirementAge = 55;
+                
+                // 计算延迟退休时间
+                if (birthYear <= 1970) {
+                    // 1970年及以前出生，不延迟
+                    delayMonths = 0;
+                } else if (birthYear >= 1982) {
+                    // 1982年及以后出生，延迟到58岁退休
+                    delayMonths = 36; // 3年=36个月
                 } else {
-                    // 女性
-                    if (data.jobType === 'management') {
-                        // 管理岗/技术岗/灵活就业人员，原法定退休年龄55周岁
-                        originalRetirementAge = 55;
-                        
-                        // 计算延迟退休时间
-                        if (birthYear <= 1970) {
-                            // 1970年及以前出生，不延迟
-                            delayMonths = 0;
-                        } else if (birthYear >= 1982) {
-                            // 1982年及以后出生，延迟到58岁退休
-                            delayMonths = 36; // 3年=36个月
-                        } else {
-                            // 1971年至1981年出生，每4个月延迟1个月
-                            const startYear = 1970;
-                            const delayPerPeriod = 1; // 每期延迟月数
-                            const monthsPerPeriod = 4; // 每期间隔月数
-                            
-                            // 计算出生月份在延迟周期中的位置
-                            const totalMonthsFromStart = (birthYear - startYear) * 12 + (birthMonth - 1);
-                            const periods = Math.floor(totalMonthsFromStart / monthsPerPeriod);
-                            delayMonths = periods * delayPerPeriod;
-                            
-                            // 最大延迟36个月
-                            if (delayMonths > 36) {
-                                delayMonths = 36;
-                            }
-                        }
-                    } else {
-                        // 非管理技术岗，原法定退休年龄50周岁
-                        originalRetirementAge = 50;
-                        
-                        // 计算延迟退休时间
-                        if (birthYear <= 1975) {
-                            // 1975年及以前出生，不延迟
-                            delayMonths = 0;
-                        } else if (birthYear >= 1985) {
-                            // 1985年及以后出生，延迟到55岁退休
-                            delayMonths = 60; // 5年=60个月
-                        } else {
-                            // 1976年至1984年出生，每2个月延迟1个月
-                            const startYear = 1975;
-                            const delayPerPeriod = 1; // 每期延迟月数
-                            const monthsPerPeriod = 2; // 每期间隔月数
-                            
-                            // 计算出生月份在延迟周期中的位置
-                            const totalMonthsFromStart = (birthYear - startYear) * 12 + (birthMonth - 1);
-                            const periods = Math.floor(totalMonthsFromStart / monthsPerPeriod);
-                            delayMonths = periods * delayPerPeriod;
-                            
-                            // 最大延迟60个月
-                            if (delayMonths > 60) {
-                                delayMonths = 60;
-                            }
-                        }
+                    // 1971年至1981年出生，每4个月延迟1个月
+                    const startYear = 1970;
+                    const delayPerPeriod = 1; // 每期延迟月数
+                    const monthsPerPeriod = 4; // 每期间隔月数
+                    
+                    // 计算出生月份在延迟周期中的位置
+                    const totalMonthsFromStart = (birthYear - startYear) * 12 + (birthMonth - 1);
+                    // 修正：周期数需要+1
+                    const periods = Math.floor(totalMonthsFromStart / monthsPerPeriod) + 1;
+                    delayMonths = periods * delayPerPeriod;
+                    
+                    // 最大延迟36个月
+                    if (delayMonths > 36) {
+                        delayMonths = 36;
                     }
                 }
+            } else {
+                // 非管理技术岗，原法定退休年龄50周岁
+                originalRetirementAge = 50;
                 
-                // 计算实际退休年龄
-                retirementAge = originalRetirementAge + delayMonths / 12;
-                
-                // 计算退休年份和月份
-                retirementYear = birthYear + originalRetirementAge + Math.floor(delayMonths / 12);
-                retirementMonth = birthMonth + (delayMonths % 12);
-                
-                // 处理月份超过12的情况
-                if (retirementMonth > 12) {
-                    retirementYear += Math.floor(retirementMonth / 12);
-                    retirementMonth = retirementMonth % 12;
-                }
-                
-                // 计算最低缴费年限
-                let minYears = 15;
-                let minMonths = 0;
-                
-                if (retirementYear >= 2040) {
-                    minYears = 20;
-                } else if (retirementYear >= 2030) {
-                    const extraYears = retirementYear - 2030;
-                    minYears = 15 + extraYears;
-                    minMonths = 0;
-                    
-                    // 2030年是15年6个月，之后每年增加6个月
-                    if (retirementYear === 2030) {
-                        minMonths = 6;
-                    }
-                }
-                
-                // 计算距离退休还有多少个月
-                const now = new Date();
-                const currentYear = now.getFullYear();
-                const currentMonth = now.getMonth() + 1;
-                
-                let monthsToRetirement = (retirementYear - currentYear) * 12 + (retirementMonth - currentMonth);
-                if (monthsToRetirement < 0) {
-                    monthsToRetirement = 0;
-                }
-                
-                return {
-                    originalRetirementAge: originalRetirementAge,
-                    delayMonths: delayMonths,
-                    retirementAge: retirementAge,
-                    retirementYear: retirementYear,
-                    retirementMonth: retirementMonth,
-                    minYears: minYears,
-                    minMonths: minMonths,
-                    monthsToRetirement: monthsToRetirement
-                };
-            }
-            
-            // 计算养老金领取地
-            function calculatePensionLocation(data) {
-                const result = {
-                    treatmentLocation: '',
-                    treatmentCity: '',
-                    insuredDetails: [],
-                    totalYears: 0,
-                    totalMonths: 0
-                };
-                
-                // 情况1：当前参保省=户籍省=广东省
-                if (data.hukouProvince === '广东省' && data.currentProvince === '广东省' && data.guangdongRecords) {
-                    result.treatmentLocation = '广东省';
-                    
-                    // 根据广东省内规则确定具体城市
-                    if (data.guangdongRecords.length > 0) {
-                        // 这里简化处理，实际应根据广东省内规则确定具体城市
-                        // 例如：将缴费年限最长的城市作为领取地
-                        let maxMonths = 0;
-                        let maxCity = '';
-                        
-                        data.guangdongRecords.forEach(record => {
-                            const totalMonths = record.years * 12 + record.months;
-                            if (totalMonths > maxMonths) {
-                                maxMonths = totalMonths;
-                                maxCity = record.city;
-                            }
-                        });
-                        
-                        result.treatmentCity = maxCity;
-                    }
-                    
-                    // 计算广东省总缴费年限
-                    let guangdongTotalYears = 0;
-                    let guangdongTotalMonths = 0;
-                    
-                    data.guangdongRecords.forEach(record => {
-                        guangdongTotalYears += record.years;
-                        guangdongTotalMonths += record.months;
-                    });
-                    
-                    // 处理月份进位
-                    guangdongTotalYears += Math.floor(guangdongTotalMonths / 12);
-                    guangdongTotalMonths = guangdongTotalMonths % 12;
-                    
-                    result.totalYears = guangdongTotalYears;
-                    result.totalMonths = guangdongTotalMonths;
-                    
-                    // 添加参保信息详情
-                    result.insuredDetails.push({
-                        province: '广东省',
-                        years: guangdongTotalYears,
-                        months: guangdongTotalMonths,
-                        remark: `广东省${result.treatmentCity}是待遇领取地，因为户籍和当前参保都在广东省，且${result.treatmentCity}是最后参保地/缴费年限最长的城市`
-                    });
-                    
-                    return result;
-                }
-                
-                // 情况2：当前参保省=户籍省≠广东
-                if (data.hukouProvince === data.currentProvince && data.hukouProvince !== '广东省' && data.insuredRecords) {
-                    result.treatmentLocation = data.hukouProvince;
-                    
-                    // 计算总缴费年限
-                    let totalYears = 0;
-                    let totalMonths = 0;
-                    
-                    data.insuredRecords.forEach(record => {
-                        totalYears += record.years;
-                        totalMonths += record.months;
-                    });
-                    
-                    // 处理月份进位
-                    totalYears += Math.floor(totalMonths / 12);
-                    totalMonths = totalMonths % 12;
-                    
-                    result.totalYears = totalYears;
-                    result.totalMonths = totalMonths;
-                    
-                    // 添加参保信息详情
-                    data.insuredRecords.forEach(record => {
-                        const isTempAccount = checkTempAccount(data, record);
-                        const remark = isTempAccount ? 
-                            `临时账户，不作为待遇领取地` : 
-                            `可作为待遇领取地，因为基本养老保险关系在户籍所在地`;
-                        
-                        result.insuredDetails.push({
-                            province: record.province,
-                            years: record.years,
-                            months: record.months,
-                            remark: remark
-                        });
-                    });
-                    
-                    return result;
-                }
-                
-                // 情况3：当前参保省≠户籍省
-                // 按参保日期排序
-                data.insuredRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
-                
-                // 获取首次参保记录
-                const firstRecord = data.insuredRecords[0];
-                
-                // 计算首次参保时的年龄
-                const birthDate = new Date(data.birthDate);
-                const firstInsuredDate = new Date(firstRecord.date);
-                const ageAtFirstInsured = firstInsuredDate.getFullYear() - birthDate.getFullYear();
-                
-                // 步骤1: 判断是否建立临时账户
-                let tempAccount = false;
-                if (firstRecord.province !== data.hukouProvince) {
-                    if (firstInsuredDate >= new Date('2010-01-01')) {
-                        if ((data.gender === 'male' && ageAtFirstInsured >= 50) || 
-                            (data.gender === 'female' && ageAtFirstInsured >= 40)) {
-                            tempAccount = true;
-                        }
-                    }
-                }
-                
-                // 步骤2: 确定待遇领取地
-                if (tempAccount) {
-                    // 排除临时账户后确定待遇领取地
-                    
-                    // 查找非临时账户的参保记录
-                    const validRecords = data.insuredRecords.filter(record => {
-                        if (record === firstRecord) return false; // 排除临时账户
-                        return true;
-                    });
-                    
-                    // 判断是否在户籍地有参保记录
-                    const hasHukouRecord = validRecords.some(record => record.province === data.hukouProvince);
-                    
-                    if (hasHukouRecord) {
-                        result.treatmentLocation = data.hukouProvince;
-                    } else {
-                        // 查找缴费满10年的参保地
-                        const fullTenYearsRecord = validRecords.find(record => {
-                            const recordMonths = record.years * 12 + record.months;
-                            return recordMonths >= 120; // 10年=120个月
-                        });
-                        
-                        if (fullTenYearsRecord) {
-                            result.treatmentLocation = fullTenYearsRecord.province;
-                        } else {
-                            // 查找上一个缴费满10年的原参保地
-                            const previousFullTenYearsRecord = validRecords.find(record => {
-                                const recordMonths = record.years * 12 + record.months;
-                                return recordMonths >= 120;
-                            });
-                            
-                            if (previousFullTenYearsRecord) {
-                                result.treatmentLocation = previousFullTenYearsRecord.province;
-                            } else {
-                                result.treatmentLocation = data.hukouProvince;
-                            }
-                        }
-                    }
+                // 计算延迟退休时间
+                if (birthYear <= 1975) {
+                    // 1975年及以前出生，不延迟
+                    delayMonths = 0;
+                } else if (birthYear >= 1985) {
+                    // 1985年及以后出生，延迟到55岁退休
+                    delayMonths = 60; // 5年=60个月
                 } else {
-                    // 没有临时账户，直接确定待遇领取地
+                    // 1976年至1984年出生，每2个月延迟1个月
+                    const startYear = 1975;
+                    const delayPerPeriod = 1; // 每期延迟月数
+                    const monthsPerPeriod = 2; // 每期间隔月数
                     
-                    // 判断是否在户籍地有参保记录
-                    const hasHukouRecord = data.insuredRecords.some(record => record.province === data.hukouProvince);
+                    // 计算出生月份在延迟周期中的位置
+                    const totalMonthsFromStart = (birthYear - startYear) * 12 + (birthMonth - 1);
+                    // 修正：周期数需要+1
+                    const periods = Math.floor(totalMonthsFromStart / monthsPerPeriod) + 1;
+                    delayMonths = periods * delayPerPeriod;
                     
-                    if (hasHukouRecord) {
-                        result.treatmentLocation = data.hukouProvince;
-                    } else {
-                        // 查找缴费满10年的参保地
-                        const fullTenYearsRecord = data.insuredRecords.find(record => {
-                            const recordMonths = record.years * 12 + record.months;
-                            return recordMonths >= 120; // 10年=120个月
-                        });
-                        
-                        if (fullTenYearsRecord) {
-                            result.treatmentLocation = fullTenYearsRecord.province;
-                        } else {
-                            // 查找上一个缴费满10年的原参保地
-                            const previousFullTenYearsRecord = data.insuredRecords.find(record => {
-                                const recordMonths = record.years * 12 + record.months;
-                                return recordMonths >= 120;
-                            });
-                            
-                            if (previousFullTenYearsRecord) {
-                                result.treatmentLocation = previousFullTenYearsRecord.province;
-                            } else {
-                                result.treatmentLocation = data.hukouProvince;
-                            }
-                        }
+                    // 最大延迟60个月
+                    if (delayMonths > 60) {
+                        delayMonths = 60;
                     }
                 }
-                
-                // 步骤3: 如果待遇领取地为广东省，需要进一步确定具体城市
-                if (result.treatmentLocation === '广东省' && data.guangdongRecords) {
-                    // 根据广东省内规则确定具体城市
-                    if (data.guangdongRecords.length > 0) {
-                        // 将缴费年限最长的城市作为领取地
-                        let maxMonths = 0;
-                        let maxCity = '';
-                        
-                        data.guangdongRecords.forEach(record => {
-                            const totalMonths = record.years * 12 + record.months;
-                            if (totalMonths > maxMonths) {
-                                maxMonths = totalMonths;
-                                maxCity = record.city;
-                            }
-                        });
-                        
-                        result.treatmentCity = maxCity;
-                    }
-                }
-                
-                // 计算总缴费年限
-                let totalYears = 0;
-                let totalMonths = 0;
-                
-                data.insuredRecords.forEach(record => {
-                    totalYears += record.years;
-                    totalMonths += record.months;
-                });
-                
-                // 处理月份进位
-                totalYears += Math.floor(totalMonths / 12);
-                totalMonths = totalMonths % 12;
-                
-                result.totalYears = totalYears;
-                result.totalMonths = totalMonths;
-                
-                // 添加参保信息详情
-                // 合并广东省内多个地市的记录为一条广东省记录
-                const mergedRecords = {};
-                
-                data.insuredRecords.forEach(record => {
-                    const province = record.province;
-                    if (!mergedRecords[province]) {
-                        mergedRecords[province] = {
-                            province: province,
-                            years: 0,
-                            months: 0,
-                            remarks: []
-                        };
-                    }
-                    
-                    mergedRecords[province].years += record.years;
-                    mergedRecords[province].months += record.months;
-                    
-                    const isTempAccount = checkTempAccount(data, record);
-                    if (isTempAccount) {
-                        mergedRecords[province].remarks.push('临时账户，不作为待遇领取地');
-                    }
-                });
-                
-                // 处理月份进位和生成备注
-                Object.values(mergedRecords).forEach(record => {
-                    record.years += Math.floor(record.months / 12);
-                    record.months = record.months % 12;
-                    
-                    let remark = '';
-                    if (record.province === result.treatmentLocation) {
-                        if (result.treatmentLocation === '广东省' && result.treatmentCity) {
-                            remark = `广东省${result.treatmentCity}是待遇领取地，因为${result.treatmentCity}是最后参保地/缴费年限最长的城市`;
-                        } else {
-                            remark = '可作为待遇领取地，符合领取条件';
-                        }
-                    } else {
-                        remark = '不可作为待遇领取地，不符合领取条件';
-                    }
-                    
-                    // 如果有临时账户备注，添加到备注中
-                    if (record.remarks.length > 0) {
-                        remark += ` (${record.remarks.join('; ')})`;
-                    }
-                    
-                    result.insuredDetails.push({
-                        province: record.province,
-                        years: record.years,
-                        months: record.months,
-                        remark: remark
-                    });
-                });
-                
-                return result;
             }
+        }
+        
+        // 计算实际退休年龄（年+月格式）
+        const retirementAgeYears = originalRetirementAge + Math.floor(delayMonths / 12);
+        const retirementAgeMonths = delayMonths % 12;
+        
+        // 计算退休年份和月份
+        retirementYear = birthYear + retirementAgeYears;
+        retirementMonth = birthMonth + retirementAgeMonths;
+        
+        // 处理月份超过12的情况
+        if (retirementMonth > 12) {
+            retirementYear += Math.floor(retirementMonth / 12);
+            retirementMonth = retirementMonth % 12;
+        }
+        
+        // 计算最低缴费年限
+        let minYears = 15;
+        let minMonths = 0;
+        
+        if (retirementYear >= 2040) {
+            minYears = 20;
+        } else if (retirementYear >= 2030) {
+            const extraYears = retirementYear - 2030;
+            minYears = 15 + extraYears;
+            minMonths = 0;
             
-            // 检查是否为临时账户
-            function checkTempAccount(data, record) {
-                if (record.province !== data.hukouProvince) {
-                    const birthDate = new Date(data.birthDate);
-                    const insuredDate = new Date(record.date);
-                    const ageAtInsured = insuredDate.getFullYear() - birthDate.getFullYear();
-                    
-                    if (insuredDate >= new Date('2010-01-01')) {
-                        if ((data.gender === 'male' && ageAtInsured >= 50) || 
-                            (data.gender === 'female' && ageAtInsured >= 40)) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
+            // 2030年是15年6个月，之后每年增加6个月
+            if (retirementYear === 2030) {
+                minMonths = 6;
             }
+        }
+        
+        // 计算距离退休还有多少个月
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        
+        let monthsToRetirement = (retirementYear - currentYear) * 12 + (retirementMonth - currentMonth);
+        if (monthsToRetirement < 0) {
+            monthsToRetirement = 0;
+        }
+        
+        return {
+            originalRetirementAge: originalRetirementAge,
+            delayMonths: delayMonths,
+            retirementAge: retirementAgeYears + retirementAgeMonths / 12, // 保持小数格式用于计算
+            retirementAgeYears: retirementAgeYears, // 新增：退休年龄-年
+            retirementAgeMonths: retirementAgeMonths, // 新增：退休年龄-月
+            retirementYear: retirementYear,
+            retirementMonth: retirementMonth,
+            minYears: minYears,
+            minMonths: minMonths,
+            monthsToRetirement: monthsToRetirement
+        };
+    }
+    
+    // 显示早期结果
+    function showEarlyResult() {
+        // 显示早期结果
+        earlyResultContent.innerHTML = `
+            <div class="result-item">
+                <div class="section-title">退休年龄</div>
+                <div>您的退休年龄：<span class="highlight">${retirementInfo.retirementAgeYears}岁${retirementInfo.retirementAgeMonths > 0 ? retirementInfo.retirementAgeMonths + '个月' : ''}</span></div>
+                <div>预计退休年份：<span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span></div>
+            </div>
+            <div class="result-item">
+                <div class="section-title">最低缴费年限</div>
+                <div>您的退休最低缴费年限要求：<span class="highlight">${retirementInfo.minYears}年${retirementInfo.minMonths > 0 ? retirementInfo.minMonths + '个月' : ''}</span></div>
+            </div>
+            <div class="result-item">
+                  <div class="section-title">政策依据</div>
+            <div class="policy-section">
+                <h4>1.跨省待遇领取地确定</h4>
+                <p>第六条　跨省流动就业的参保人员达到待遇领取条件时，按下列规定确定其待遇领取地：</p>
+                <p>（一）基本养老保险关系在户籍所在地的，由户籍所在地负责办理待遇领取手续，享受基本养老保险待遇。</p>
+                <p>（二）基本养老保险关系不在户籍所在地，而在其基本养老保险关系所在地累计缴费年限满10年的，在该地办理待遇领取手续，享受当地基本养老保险待遇。</p>
+                <p>（三）基本养老保险关系不在户籍所在地，且在其基本养老保险关系所在地累计缴费年限不满10年的，将其基本养老保险关系转回上一个缴费年限满10年的原参保地办理待遇领取手续，享受基本养老保险待遇。</p>
+                <p>（四）基本养老保险关系不在户籍所在地，且在每个参保地的累计缴费年限均不满10年的，将其基本养老保险关系及相应资金归集到户籍所在地，由户籍所在地按规定办理待遇领取手续，享受基本养老保险待遇。</p>
+                <p>——《国务院办公厅关于转发人力资源社会保障部财政部城镇企业职工基本养老保险关系转移接续暂行办法的通知》国办发〔2009〕66号</p>
+            </div>
+            <div class="policy-section">
+                <h4>2.临时账户规定</h4>
+                <p>2010年1月1日起，男年满50周岁、女年满40周岁的劳动者在非户籍地首次参加城镇企业职工基本养老保险的(经县级以上党委组织部门、人力资源社会保障行政部门批准调动的除外),参保地应当为其建立临时基本养老保险缴费账户(以下简称临时账户)。</p>
+                <p><span class="highlight">临时账户缴费年限不参与确定待遇领取地。</span></p>
+            </div>
+            <div class="policy-section">
+                <h4>3.省内跨地市待遇领取地确定</h4>
+                <p>参保人符合领取基本养老保险待遇的条件时，由最后参保地社会保险经办机构按规定办理申领、审核手续并发放基本养老保险金、年度调整增加的基本养老金和死亡待遇等。</p>
+                <p>——《印发广东省基本养老保险关系省内转移接续暂行办法的通知》（粤府办〔2008〕76号）</p>
+            </div>
+        `;
+        
+        earlyResultModal.style.display = 'flex';
+    }
+    
+    // 显示结果
+    function displayResult(result) {
+        resultContent.innerHTML = '';
+        
+        // 1. 养老金领取地
+        const locationDiv = document.createElement('div');
+        locationDiv.className = 'result-item final-result';
+        locationDiv.innerHTML = `
+            <div class="section-title">领取地结果</div>
+            <div class="location-result">您的养老金领取地为：${result.treatmentLocation}${result.treatmentCity ? '（' + result.treatmentCity + '）' : ''}</div>
+        `;
+        resultContent.appendChild(locationDiv);
+        
+        // 2. 参保信息详情
+        if (result.insuredDetails.length > 0) {
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'result-item';
+            detailsDiv.innerHTML = '<div class="section-title">参保信息详情</div>';
             
-            // 显示广东省模态框
-            function showGuangdongModal() {
-                guangdongModal.style.display = 'flex';
-                guangdongRecords.innerHTML = '';
-                guangdongRecordCount = 0;
-                
-                // 自动添加一条记录
-                addGuangdongRecord();
-            }
+            const table = document.createElement('table');
+            table.className = 'info-table';
             
-            // 显示早期结果
-            function showEarlyResult() {
-                // 显示早期结果
-                earlyResultContent.innerHTML = `
-                    <div class="result-item">
-                        <div class="section-title">退休年龄</div>
-                        <div>您的退休年龄：<span class="highlight">${retirementInfo.retirementAge.toFixed(1)} 岁</span></div>
-                        <div>预计退休年份：<span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span></div>
-                    </div>
-                    <div class="result-item">
-                        <div class="section-title">最低缴费年限</div>
-                        <div>您的退休最低缴费年限要求：<span class="highlight">${retirementInfo.minYears}年${retirementInfo.minMonths > 0 ? retirementInfo.minMonths + '个月' : ''}</span></div>
-                    </div>
-                    <div class="result-item">
-                        <div class="section-title">政策依据</div>
-                        <div class="policy-section">
-                            <h4>1.跨省待遇领取地确定</h4>
-                            <p>第六条　跨省流动就业的参保人员达到待遇领取条件时，按下列规定确定其待遇领取地：</p>
-                            <p>（一）基本养老保险关系在户籍所在地的，由户籍所在地负责办理待遇领取手续，享受基本养老保险待遇。</p>
-                            <p>（二）基本养老保险关系不在户籍所在地，而在其基本养老保险关系所在地累计缴费年限满10年的，在该地办理待遇领取手续，享受当地基本养老保险待遇。</p>
-                            <p>（三）基本养老保险关系不在户籍所在地，且在其基本养老保险关系所在地累计缴费年限不满10年的，将其基本养老保险关系转回上一个缴费年限满10年的原参保地办理待遇领取手续，享受基本养老保险待遇。</p>
-                            <p>（四）基本养老保险关系不在户籍所在地，且在每个参保地的累计缴费年限均不满10年的，将其基本养老保险关系及相应资金归集到户籍所在地，由户籍所在地按规定办理待遇领取手续，享受基本养老保险待遇。</p>
-                            <p>——《国务院办公厅关于转发人力资源社会保障部财政部城镇企业职工基本养老保险关系转移接续暂行办法的通知》国办发〔2009〕66号</p>
-                        </div>
-                    </div>
-                `;
-                
-                earlyResultModal.style.display = 'flex';
-            }
+            // 表头
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>省份</th>
+                    <th>累计缴费年限</th>
+                    <th>备注</th>
+                </tr>
+            `;
+            table.appendChild(thead);
             
-            // 显示结果
-            function displayResult(result) {
-                resultContent.innerHTML = '';
-                
-                // 1. 养老金领取地
-                const locationDiv = document.createElement('div');
-                locationDiv.className = 'result-item final-result';
-                locationDiv.innerHTML = `
-                    <div class="section-title">领取地结果</div>
-                    <div class="location-result">您的养老金领取地为：${result.treatmentLocation}${result.treatmentCity ? '（' + result.treatmentCity + '）' : ''}</div>
+            // 表体
+            const tbody = document.createElement('tbody');
+            result.insuredDetails.forEach(detail => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${detail.province}</td>
+                    <td>${detail.years}年${detail.months}个月</td>
+                    <td>${detail.remark}</td>
                 `;
-                resultContent.appendChild(locationDiv);
-                
-                // 2. 参保信息详情
-                if (result.insuredDetails.length > 0) {
-                    const detailsDiv = document.createElement('div');
-                    detailsDiv.className = 'result-item';
-                    detailsDiv.innerHTML = '<div class="section-title">参保信息详情</div>';
-                    
-                    const table = document.createElement('table');
-                    table.className = 'info-table';
-                    
-                    // 表头
-                    const thead = document.createElement('thead');
-                    thead.innerHTML = `
-                        <tr>
-                            <th>省份</th>
-                            <th>累计缴费年限</th>
-                            <th>备注</th>
-                        </tr>
-                    `;
-                    table.appendChild(thead);
-                    
-                    // 表体
-                    const tbody = document.createElement('tbody');
-                    result.insuredDetails.forEach(detail => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${detail.province}</td>
-                            <td>${detail.years}年${detail.months}个月</td>
-                            <td>${detail.remark}</td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                    table.appendChild(tbody);
-                    
-                    detailsDiv.appendChild(table);
-                    resultContent.appendChild(detailsDiv);
-                }
-                
-                // 3. 退休年龄
-                const retirementDiv = document.createElement('div');
-                retirementDiv.className = 'result-item';
-                retirementDiv.innerHTML = `
-                    <div class="section-title">退休年龄</div>
-                    <div>您的退休年龄：<span class="highlight">${retirementInfo.retirementAge.toFixed(1)} 岁</span></div>
-                    <div>预计退休年份：<span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span></div>
-                `;
-                resultContent.appendChild(retirementDiv);
-                
-                // 4. 最低缴费年限
-                const minYearsDiv = document.createElement('div');
-                minYearsDiv.className = 'result-item';
-                
-                // 计算是否满足最低缴费年限
-                const totalMonths = result.totalYears * 12 + result.totalMonths;
-                const minMonths = retirementInfo.minYears * 12 + retirementInfo.minMonths;
-                const isSatisfied = totalMonths >= minMonths;
-                
-                let yearsText = '';
-                if (isSatisfied) {
-                    yearsText = `<span class="satisfy-requirement">您已满足最低缴费年限要求</span>，达到退休年龄前1个月到养老金领取地<span class="highlight">【${result.treatmentLocation}】</span>办理退休手续领养老金。`;
-                } else {
-                    yearsText = `<span class="not-satisfy-requirement">您当前还不满足最低缴费年限要求</span>，在达到退休年龄前1个月到养老金领取地<span class="highlight">【${result.treatmentLocation}】</span>办理延长缴费，直至缴够<span class="highlight">【${retirementInfo.minYears}年${retirementInfo.minMonths > 0 ? retirementInfo.minMonths + '个月' : ''}】</span>后办理退休手续领养老金。`;
-                }
-                
-                minYearsDiv.innerHTML = `
-                    <div class="section-title">最低缴费年限</div>
-                    <div>您的退休最低缴费年限要求：<span class="highlight">${retirementInfo.minYears}年${retirementInfo.minMonths > 0 ? retirementInfo.minMonths + '个月' : ''}</span></div>
-                    <div>您的累计缴费年限：<span class="highlight">${result.totalYears}年${result.totalMonths}个月</span></div>
-                    <div>${yearsText}</div>
-                `;
-                resultContent.appendChild(minYearsDiv);
-                
-                // 5. 政策依据
-                const policyDiv = document.createElement('div');
-                policyDiv.className = 'result-item';
-                policyDiv.innerHTML = `
-                    <div class="section-title">政策依据</div>
-                    <div class="policy-section">
-                        <h4>1.跨省待遇领取地确定</h4>
-                        <p>第六条　跨省流动就业的参保人员达到待遇领取条件时，按下列规定确定其待遇领取地：</p>
-                        <p>（一）基本养老保险关系在户籍所在地的，由户籍所在地负责办理待遇领取手续，享受基本养老保险待遇。</p>
-                        <p>（二）基本养老保险关系不在户籍所在地，而在其基本养老保险关系所在地累计缴费年限满10年的，在该地办理待遇领取手续，享受当地基本养老保险待遇。</p>
-                        <p>（三）基本养老保险关系不在户籍所在地，且在其基本养老保险关系所在地累计缴费年限不满10年的，将其基本养老保险关系转回上一个缴费年限满10年的原参保地办理待遇领取手续，享受基本养老保险待遇。</p>
-                        <p>（四）基本养老保险关系不在户籍所在地，且在每个参保地的累计缴费年限均不满10年的，将其基本养老保险关系及相应资金归集到户籍所在地，由户籍所在地按规定办理待遇领取手续，享受基本养老保险待遇。</p>
-                        <p>——《国务院办公厅关于转发人力资源社会保障部财政部城镇企业职工基本养老保险关系转移接续暂行办法的通知》国办发〔2009〕66号</p>
-                    </div>
-                    <div class="policy-section">
-                        <h4>2.临时账户规定</h4>
-                        <p>一、2010年1月1日起，男年满50周岁、女年满40周岁的劳动者在非户籍地首次参加城镇企业职工基本养老保险的(经县级以上党委组织部门、人力资源社会保障行政部门批准调动的除外),参保地应当为其建立临时基本养老保险缴费账户(以下简称临时账户)。</p>
-                        <p>临时账户记录单位和个人全部缴费,不形成基本养老保险关系(以下简称一般账户)。临时账户缴费年限不参与确定待遇领取地。</p>
-                    </div>
-                    <div class="policy-section">
-                        <h4>3.省内跨地市待遇领取地确定</h4>
-                        <p>五、基本养老保险待遇申领与发放</p>
-                        <p>参保人符合领取基本养老保险待遇的条件时，由最后参保地社会保险经办机构按规定办理申领、审核手续并发放基本养老保险金、年度调整增加的基本养老金和死亡待遇等。</p>
-                        <p>——《印发广东省基本养老保险关系省内转移接续暂行办法的通知》（粤府办〔2008〕76号）</p>
-                    </div>
-                `;
-                resultContent.appendChild(policyDiv);
-            }
-        });
-    </script>
-</body>
-</html>
+                tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+            
+            detailsDiv.appendChild(table);
+            resultContent.appendChild(detailsDiv);
+        }
+        
+        // 3. 退休年龄
+        const retirementDiv = document.createElement('div');
+        retirementDiv.className = 'result-item';
+        retirementDiv.innerHTML = `
+            <div class="section-title">退休年龄</div>
+            <div>您的退休年龄：<span class="highlight">${retirementInfo.retirementAgeYears}岁${retirementInfo.retirementAgeMonths > 0 ? retirementInfo.retirementAgeMonths + '个月' : ''}</span></div>
+            <div>预计退休年份：<span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span></div>
+        `;
+        resultContent.appendChild(retirementDiv);
+        
+        // 4. 最低缴费年限
+        const minYearsDiv = document.createElement('div');
+        minYearsDiv.className = 'result-item';
+        
+        // 计算是否满足最低缴费年限
+        const totalMonths = result.totalYears * 12 + result.totalMonths;
+        const minMonths = retirementInfo.minYears * 12 + retirementInfo.minMonths;
+        const isSatisfied = totalMonths >= minMonths;
+        
+        let yearsText = '';
+        if (isSatisfied) {
+            yearsText = `<span class="satisfy-requirement">您已满足最低缴费年限要求</span>，达到退休年龄前1个月到养老金领取地<span class="highlight">【${result.treatmentLocation}】</span>办理退休手续领养老金。`;
+        } else {
+            yearsText = `<span class="not-satisfy-requirement">您当前还不满足最低缴费年限要求</span>，在达到退休年龄前1个月到养老金领取地<span class="highlight">【${result.treatmentLocation}】</span>办理延长缴费，直至缴够<span class="highlight">【${retirementInfo.minYears}年${retirementInfo.minMonths > 0 ? retirementInfo.minMonths + '个月' : ''}】</span>后办理退休手续领养老金。`;
+        }
+        
+        minYearsDiv.innerHTML = `
+            <div class="section-title">最低缴费年限</div>
+            <div>您的退休最低缴费年限要求：<span class="highlight">${retirementInfo.minYears}年${retirementInfo.minMonths > 0 ? retirementInfo.minMonths + '个月' : ''}</span></div>
+            <div>您的累计缴费年限：<span class="highlight">${result.totalYears}年${result.totalMonths}个月</span></div>
+            <div>${yearsText}</div>
+        `;
+        resultContent.appendChild(minYearsDiv);
+        
+        // 5. 政策依据
+        const policyDiv = document.createElement('div');
+        policyDiv.className = 'result-item';
+        policyDiv.innerHTML = `
+         <div class="section-title">政策依据</div>
+            <div class="policy-section">
+                <h4>1.跨省待遇领取地确定</h4>
+                <p>第六条　跨省流动就业的参保人员达到待遇领取条件时，按下列规定确定其待遇领取地：</p>
+                <p>（一）基本养老保险关系在户籍所在地的，由户籍所在地负责办理待遇领取手续，享受基本养老保险待遇。</p>
+                <p>（二）基本养老保险关系不在户籍所在地，而在其基本养老保险关系所在地累计缴费年限满10年的，在该地办理待遇领取手续，享受当地基本养老保险待遇。</p>
+                <p>（三）基本养老保险关系不在户籍所在地，且在其基本养老保险关系所在地累计缴费年限不满10年的，将其基本养老保险关系转回上一个缴费年限满10年的原参保地办理待遇领取手续，享受基本养老保险待遇。</p>
+                <p>（四）基本养老保险关系不在户籍所在地，且在每个参保地的累计缴费年限均不满10年的，将其基本养老保险关系及相应资金归集到户籍所在地，由户籍所在地按规定办理待遇领取手续，享受基本养老保险待遇。</p>
+                <p>——《国务院办公厅关于转发人力资源社会保障部财政部城镇企业职工基本养老保险关系转移接续暂行办法的通知》国办发〔2009〕66号</p>
+            </div>
+            <div class="policy-section">
+                <h4>2.临时账户规定</h4>
+                <p>2010年1月1日起，男年满50周岁、女年满40周岁的劳动者在非户籍地首次参加城镇企业职工基本养老保险的(经县级以上党委组织部门、人力资源社会保障行政部门批准调动的除外),参保地应当为其建立临时基本养老保险缴费账户(以下简称临时账户)。</p>
+                <p><span class="highlight">$临时账户缴费年限不参与确定待遇领取地。</span></p>
+            </div>
+            <div class="policy-section">
+                <h4>3.省内跨地市待遇领取地确定</h4>
+                <p>参保人符合领取基本养老保险待遇的条件时，由最后参保地社会保险经办机构按规定办理申领、审核手续并发放基本养老保险金、年度调整增加的基本养老金和死亡待遇等。</p>
+                <p>——《印发广东省基本养老保险关系省内转移接续暂行办法的通知》（粤府办〔2008〕76号）</p>
+            </div>
+        `;
+        resultContent.appendChild(policyDiv);
+    }
+});
+</script>
