@@ -516,7 +516,36 @@
                     </select>
                     <div class="error" id="hukouProvinceError">请选择户籍所在省份</div>
                 </div>
-                
+
+                 <div class="form-group" id="hukouCityGroup" style="display: none;">
+            <label for="hukouCity">户籍所在地（城市）</label>
+            <select id="hukouCity" name="hukouCity">
+                <option value="">-- 请选择城市 --</option>
+                <option value="广州市">广州市</option>
+                <option value="深圳市">深圳市</option>
+                <option value="珠海市">珠海市</option>
+                <option value="汕头市">汕头市</option>
+                <option value="佛山市">佛山市</option>
+                <option value="韶关市">韶关市</option>
+                <option value="湛江市">湛江市</option>
+                <option value="肇庆市">肇庆市</option>
+                <option value="江门市">江门市</option>
+                <option value="茂名市">茂名市</option>
+                <option value="惠州市">惠州市</option>
+                <option value="梅州市">梅州市</option>
+                <option value="汕尾市">汕尾市</option>
+                <option value="河源市">河源市</option>
+                <option value="阳江市">阳江市</option>
+                <option value="清远市">清远市</option>
+                <option value="东莞市">东莞市</option>
+                <option value="中山市">中山市</option>
+                <option value="潮州市">潮州市</option>
+                <option value="揭阳市">揭阳市</option>
+                <option value="云浮市">云浮市</option>
+            </select>
+            <div class="error" id="hukouCityError">请选择户籍所在城市</div>
+        </div>
+
                 <div class="form-group">
                     <label for="currentProvince">当前参保省份</label>
                     <select id="currentProvince" name="currentProvince" required>
@@ -690,66 +719,92 @@
             // 性别选择变化监听
             genderRadios.forEach(radio => {
                 radio.addEventListener('change', function() {
-                    if (this.value === 'female') {
+                     if (this.value === 'female') {
                         jobTypeGroup.style.display = 'block';
                     } else {
                         jobTypeGroup.style.display = 'none';
                     }
                 });
             });
-            
+            // === 新增：户籍省份变化监听 ===
+hukouProvince.addEventListener('change', function() {
+    const hukouCityGroup = document.getElementById('hukouCityGroup');
+    if (this.value === '广东省') {
+        hukouCityGroup.style.display = 'block';
+    } else {
+        hukouCityGroup.style.display = 'none';
+    }
+});
+// 新增：页面加载时检查户籍省份状态
+// 放在事件监听器绑定之后
+setTimeout(() => {
+    const hukouCityGroup = document.getElementById('hukouCityGroup');
+    if (hukouProvince.value === '广东省') {
+        hukouCityGroup.style.display = 'block';
+    } else {
+        hukouCityGroup.style.display = 'none';
+    }
+}, 0);
+    
             // 下一步到第二步
-            nextToStep2Btn.addEventListener('click', function() {
-                if (!validateBasicInfo()) {
-                    return;
-                }
-                
-                // 收集基本信息
-                const formData = new FormData(basicInfoForm);
-                userData = {
-                    birthDate: formData.get('birthDate'),
-                    gender: formData.get('gender'),
-                    hukouProvince: formData.get('hukouProvince'),
-                    currentProvince: formData.get('currentProvince')
-                };
-                
-                // 如果是女性，收集岗位性质
-                if (userData.gender === 'female') {
-                    const jobType = document.querySelector('input[name="jobType"]:checked');
-                    if (!jobType) {
-                        alert('请选择岗位性质');
-                        return;
-                    }
-                    userData.jobType = jobType.value;
-                }
-                
-                // 计算退休信息
-                retirementInfo = calculateRetirementInfo(userData);
-                
-                // 判断四种情况
-                // 情况1：距离退休年龄超过6个月
-                if (retirementInfo.monthsToRetirement > 6) {
-                    showEarlyResult();
-                    return;
-                }
-                
-                // 情况2：距离退休年龄小于6个月且户籍地=参保地=广东省
-                if (retirementInfo.monthsToRetirement <= 6 && 
-                    userData.hukouProvince === '广东省' && 
-                    userData.currentProvince === '广东省') {
-                    showGuangdongModal();
-                    return;
-                }
-                
-                // 情况3：距离退休年龄小于6个月且户籍地=参保地≠广东省
-                // 情况4：距离退休年龄小于6个月且户籍地≠参保地
-                // 这两种情况都进入第二步
-                // 自动添加一条当前参保省记录
-                addRecordWithProvince(userData.currentProvince);
-                
-                // 切换到第二步
-                switchStep(1, 2);
-            });
+            // 修改下一步到第二步的点击事件
+nextToStep2Btn.addEventListener('click', function() {
+    if (!validateBasicInfo()) {
+        console.log('基本信息验证失败');
+        return;
+    }
+    
+    // 收集基本信息
+    const formData = new FormData(basicInfoForm);
+    userData = {
+        birthDate: formData.get('birthDate'),
+        gender: formData.get('gender'),
+        hukouProvince: formData.get('hukouProvince'),
+        hukouCity: formData.get('hukouCity'),
+        currentProvince: formData.get('currentProvince')
+    };
+    
+    // 如果是女性，收集岗位性质
+    if (userData.gender === 'female') {
+        const jobType = document.querySelector('input[name="jobType"]:checked');
+        if (!jobType) {
+            alert('请选择岗位性质');
+            return;
+        }
+        userData.jobType = jobType.value;
+    }
+    
+    // 计算退休信息
+    retirementInfo = calculateRetirementInfo(userData);
+    console.log('退休信息:', retirementInfo);
+    console.log('户籍地:', userData.hukouProvince, '当前参保地:', userData.currentProvince);
+    
+    // 判断四种情况
+    // 情况1：距离退休年龄超过6个月
+    if (retirementInfo.monthsToRetirement > 6) {
+        console.log('情况1：距离退休超过6个月');
+        showEarlyResult();
+        return;
+    }
+    
+    // 情况2：距离退休年龄小于6个月且户籍地=参保地=广东省
+    if (retirementInfo.monthsToRetirement <= 6 && 
+        userData.hukouProvince === '广东省' && 
+        userData.currentProvince === '广东省') {
+        console.log('情况2：显示广东模态框');
+        showGuangdongModal();
+        return;
+    }
+    
+    // 情况3：距离退休年龄小于6个月且户籍地=参保地≠广东省
+    // 情况4：距离退休年龄小于6个月且户籍地≠参保地
+    console.log('情况3或4：进入第二步');
+    // 自动添加一条当前参保省记录
+    addRecordWithProvince(userData.currentProvince);
+    
+    // 切换到第二步
+    switchStep(1, 2);
+});
             
             // 上一步到第一步
             backToStep1Btn.addEventListener('click', function() {
@@ -757,9 +812,32 @@
             });
             
             // 从结果页面上一步到第二步
-            backToStep2FromResultBtn.addEventListener('click', function() {
-                switchStep(3, 2);
-            });
+                     backToStep2FromResultBtn.addEventListener('click', function() {
+    // 如果是从广东模态框跳转过来的，返回广东模态框
+    if (userData.guangdongRecords && userData.guangdongRecords.length > 0) {
+        // 填充已有的广东记录到模态框
+        showGuangdongModalWithData(userData.guangdongRecords);
+        switchStep(3, 1); // 切换到第一步，但显示模态框
+    } else {
+        switchStep(3, 2);
+    }
+});
+
+// 新增函数：显示带有数据的广东模态框
+function showGuangdongModalWithData(records) {
+    guangdongModal.style.display = 'flex';
+    isGuangdongModalOpen = true;
+    
+    // 清空之前的记录
+    guangdongRecords.innerHTML = '';
+    guangdongRecordCount = 0;
+    
+    // 根据已有数据添加记录
+    records.forEach(record => {
+        addGuangdongRecordWithData(record);
+    });
+}
+
             
             // 重新测算
             restartCalcBtn.addEventListener('click', function() {
@@ -824,31 +902,35 @@ submitGuangdongInfoBtn.addEventListener('click', function() {
                 earlyResultModal.style.display = 'none';
             });
             
-            // 下一步到第三步
-            nextToStep3Btn.addEventListener('click', function() {
-                if (!validateStep2()) {
-                    return;
-                }
-                
-                // 收集参保记录
-                userData.insuredRecords = collectNormalRecords();
-                
-                // 计算养老金领取地
-                pensionResult = calculatePensionLocation(userData);
-                
-                // 如果待遇领取地为广东省，则弹出广东省信息采集
-                if (pensionResult.treatmentLocation === '广东省' && !userData.guangdongRecords && !isGuangdongModalOpen) {
-                    showGuangdongModal();
-                    isGuangdongModalOpen = true;
-                    return;
-                }
-                
-                // 显示结果
-                displayResult(pensionResult);
-                
-                // 切换到第三步
-                switchStep(2, 3);
-            });
+// 下一步到第三步
+nextToStep3Btn.addEventListener('click', function() {
+    if (!validateStep2()) {
+        return;
+    }
+    
+    // 收集参保记录
+    userData.insuredRecords = collectNormalRecords();
+    
+    // 计算养老金领取地
+    pensionResult = calculatePensionLocation(userData);
+    
+    // 修改判断条件：只有当待遇领取地为广东省且有广东参保记录时才弹出模态框
+    const hasGuangdongRecord = userData.insuredRecords && userData.insuredRecords.some(record => 
+        record.province === '广东省'
+    );
+    
+    if (pensionResult.treatmentLocation === '广东省' && hasGuangdongRecord && !userData.guangdongRecords && !isGuangdongModalOpen) {
+        showGuangdongModal();
+        isGuangdongModalOpen = true;
+        return;
+    }
+    
+    // 显示结果
+    displayResult(pensionResult);
+    
+    // 切换到第三步
+    switchStep(2, 3);
+});
             
             // 切换步骤
             function switchStep(from, to) {
@@ -871,49 +953,62 @@ submitGuangdongInfoBtn.addEventListener('click', function() {
                     }
                 }
             }
-            
-            // 验证基本信息
-            function validateBasicInfo() {
-                let isValid = true;
-                
-                // 验证出生日期
-                const birthDate = document.getElementById('birthDate');
-                const birthDateError = document.getElementById('birthDateError');
-                if (!birthDate.value) {
-                    birthDateError.style.display = 'block';
-                    isValid = false;
-                } else {
-                    birthDateError.style.display = 'none';
-                }
-                
-                // 验证性别
-                const gender = document.querySelector('input[name="gender"]:checked');
-                if (!gender) {
-                    alert('请选择性别');
-                    isValid = false;
-                }
-                
-                // 验证户籍地
-                const hukouProvinceError = document.getElementById('hukouProvinceError');
-                if (!hukouProvince.value) {
-                    hukouProvinceError.style.display = 'block';
-                    isValid = false;
-                } else {
-                    hukouProvinceError.style.display = 'none';
-                }
-                
-                // 验证当前参保省份
-                const currentProvinceError = document.getElementById('currentProvinceError');
-                if (!currentProvince.value) {
-                    currentProvinceError.style.display = 'block';
-                    isValid = false;
-                } else {
-                    currentProvinceError.style.display = 'none';
-                }
-                
-                return isValid;
-            }
-            
+            // 修改验证基本信息函数
+function validateBasicInfo() {
+    let isValid = true;
+    
+    // 验证出生日期
+    const birthDate = document.getElementById('birthDate');
+    const birthDateError = document.getElementById('birthDateError');
+    if (!birthDate.value) {
+        birthDateError.style.display = 'block';
+        isValid = false;
+    } else {
+        birthDateError.style.display = 'none';
+    }
+    
+    // 验证性别
+    const gender = document.querySelector('input[name="gender"]:checked');
+    if (!gender) {
+        alert('请选择性别');
+        isValid = false;
+    }
+    
+    // 验证户籍地
+    const hukouProvinceError = document.getElementById('hukouProvinceError');
+    if (!hukouProvince.value) {
+        hukouProvinceError.style.display = 'block';
+        isValid = false;
+    } else {
+        hukouProvinceError.style.display = 'none';
+    }
+    
+    // 新增：验证户籍城市（如果户籍省是广东）
+    const hukouCity = document.getElementById('hukouCity');
+    const hukouCityError = document.getElementById('hukouCityError');
+    if (hukouProvince.value === '广东省') {
+        if (!hukouCity.value) {
+            hukouCityError.style.display = 'block';
+            isValid = false;
+        } else {
+            hukouCityError.style.display = 'none';
+        }
+    } else {
+        hukouCityError.style.display = 'none';
+    }
+    
+    // 验证当前参保省份
+    const currentProvinceError = document.getElementById('currentProvinceError');
+    if (!currentProvince.value) {
+        currentProvinceError.style.display = 'block';
+        isValid = false;
+    } else {
+        currentProvinceError.style.display = 'none';
+    }
+    
+    return isValid;  // 这个return应该放在函数最后
+}
+
             // 验证第二步
             function validateStep2() {
                 if (recordCount === 0) {
@@ -1048,12 +1143,12 @@ submitGuangdongInfoBtn.addEventListener('click', function() {
             }
             
             // 添加广东省内参保记录
-            function addGuangdongRecord() {
-                guangdongRecordCount++;
-                const recordDiv = document.createElement('div');
-                recordDiv.className = 'insured-record';
-                recordDiv.innerHTML = `
-                    <h3>广东省内参保记录 ${guangdongRecordCount}</h3>
+function addGuangdongRecord(recordData = null) {
+    guangdongRecordCount++;
+    const recordDiv = document.createElement('div');
+    recordDiv.className = 'insured-record';
+    recordDiv.innerHTML = `
+        <h3>广东省内参保记录 ${guangdongRecordCount}</h3>
                     <div class="row">
                         <div class="col">
                             <label>参保城市</label>
@@ -1084,36 +1179,48 @@ submitGuangdongInfoBtn.addEventListener('click', function() {
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col">
-                            <label>首次参保日期</label>
-                            <input type="date" name="guangdongFirstDate" required>
-                        </div>
-                        <div class="col">
-                            <label>最后参保日期</label>
-                            <input type="date" name="guangdongLastDate" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <label>累计缴费年限</label>
-                            <div class="years-months-input">
-                                <input type="number" name="guangdongYears" min="0" max="50" placeholder="年" required>
-                                <input type="number" name="guangdongMonths" min="0" max="11" placeholder="月" required>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-remove">删除此记录</button>
-                `;
-                
-                guangdongRecords.appendChild(recordDiv);
-                
-                // 添加删除按钮事件
-                const removeBtn = recordDiv.querySelector('.btn-remove');
-                removeBtn.addEventListener('click', function() {
-                    guangdongRecords.removeChild(recordDiv);
-                    guangdongRecordCount--;
-                });
-            }
+            <div class="col">
+                <label>首次参保日期</label>
+                <input type="date" name="guangdongFirstDate" required>
+            </div>
+            <div class="col">
+                <label>最后参保日期</label>
+                <input type="date" name="guangdongLastDate" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label>累计缴费年限</label>
+                <div class="years-months-input">
+                    <input type="number" name="guangdongYears" min="0" max="50" placeholder="年" required>
+                    <input type="number" name="guangdongMonths" min="0" max="11" placeholder="月" required>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-remove">删除此记录</button>
+    `;
+    
+    guangdongRecords.appendChild(recordDiv);
+    
+    // 如果有数据，填充表单
+    if (recordData) {
+        recordDiv.querySelector('select[name="guangdongCity"]').value = recordData.city;
+        recordDiv.querySelector('input[name="guangdongFirstDate"]').value = recordData.firstDate;
+        recordDiv.querySelector('input[name="guangdongLastDate"]').value = recordData.lastDate;
+        recordDiv.querySelector('input[name="guangdongYears"]').value = recordData.years;
+        recordDiv.querySelector('input[name="guangdongMonths"]').value = recordData.months;
+    }
+    
+    // 删除按钮事件
+    const removeBtn = recordDiv.querySelector('.btn-remove');
+    removeBtn.addEventListener('click', function() {
+        guangdongRecords.removeChild(recordDiv);
+        guangdongRecordCount--;
+    });
+}
+
+// 重命名原有函数
+const addGuangdongRecordWithData = addGuangdongRecord;
             
             // 收集普通参保记录
             function collectNormalRecords() {
@@ -1173,27 +1280,48 @@ function showGuangdongModal() {
     addGuangdongRecord();
 }
 // 计算养老金领取地
+// 修改 calculatePensionLocation 函数
+// 修改 calculatePensionLocation 函数
 function calculatePensionLocation(data) {
-    // 如果有广东省内记录，使用广东省逻辑
-    if (data.guangdongRecords && data.guangdongRecords.length > 0) {
-        return calculateGuangdongPensionLocation(data);
-    }
-    
-    // 普通逻辑
     let totalYears = 0;
     let totalMonths = 0;
     const details = [];
+    const temporaryAccounts = []; // 存储临时账户记录
     
-    // 计算总缴费年限
+    // 检查是否有广东省的参保记录
+    const hasGuangdongRecord = data.insuredRecords && data.insuredRecords.some(record => 
+        record.province === '广东省'
+    );
+    
+    // 计算总缴费年限 - 包括所有记录，包括临时账户
     data.insuredRecords.forEach(record => {
-        totalYears += record.years;
-        totalMonths += record.months;
-        details.push({
-            province: record.province,
-            years: record.years,
-            months: record.months,
-            remark: ''
-        });
+        // 判断是否为临时账户
+        const isTemporary = isTemporaryAccountForProvince(record, data);
+        
+        if (isTemporary) {
+            // 临时账户，不参与确定待遇领取地，但计入总缴费年限
+            temporaryAccounts.push({
+                location: record.province, // 统一使用location字段
+                years: record.years,
+                months: record.months,
+                firstDate: record.date, // 统一使用firstDate字段
+                remark: '临时账户（不参与确定领取地，但计入总缴费年限）'
+            });
+            
+            // 临时账户的缴费年限也要计入总缴费年限
+            totalYears += record.years;
+            totalMonths += record.months;
+        } else {
+            // 非临时账户，参与缴费年限计算
+            totalYears += record.years;
+            totalMonths += record.months;
+            details.push({
+                province: record.province,
+                years: record.years,
+                months: record.months,
+                remark: ''
+            });
+        }
     });
     
     // 处理月份进位
@@ -1204,15 +1332,16 @@ function calculatePensionLocation(data) {
     
     // 确定待遇领取地
     let treatmentLocation = data.hukouProvince; // 默认户籍地
+    let treatmentCity = null;
     
-    // 查找是否有缴费满10年的地方
-    const fullTenYearsRecords = data.insuredRecords.filter(record => 
-        record.years >= 10 || (record.years === 9 && record.months >= 0)
+    // 从非临时账户记录中查找是否有缴费满10年的地方（精确判断）
+    const validRecords = details.filter(record => 
+        (record.years * 12 + record.months) >= 120
     );
     
-    if (fullTenYearsRecords.length > 0) {
+    if (validRecords.length > 0) {
         // 有缴费满10年的地方，取最后一个
-        treatmentLocation = fullTenYearsRecords[fullTenYearsRecords.length - 1].province;
+        treatmentLocation = validRecords[validRecords.length - 1].province;
         
         // 更新备注
         details.forEach(detail => {
@@ -1227,54 +1356,125 @@ function calculatePensionLocation(data) {
                 detail.remark = '户籍所在地';
             }
         });
+        
+        // 特殊处理：如果户籍是广东且没有广东参保记录，直接指定户籍城市
+        if (treatmentLocation === '广东省' && !hasGuangdongRecord) {
+            treatmentCity = data.hukouCity;
+        }
     }
     
     return {
         treatmentLocation: treatmentLocation,
-        treatmentCity: null,
+        treatmentCity: treatmentCity,
         totalYears: totalYears,
         totalMonths: totalMonths,
-        insuredDetails: details
+        insuredDetails: details,
+        temporaryAccounts: temporaryAccounts
     };
 }
-// 计算广东省内养老金领取地
-function calculateGuangdongPensionLocation(data) {
-    // 广东省内逻辑：取最后参保地
-    const guangdongRecords = data.guangdongRecords;
-    let lastRecord = guangdongRecords[guangdongRecords.length - 1];
+// 新增函数：判断普通省份记录是否为临时账户
+function isTemporaryAccountForProvince(record, userData) {
+    const firstInsuredDate = new Date(record.date);
+    const birthDate = new Date(userData.birthDate);
     
-    // 计算总缴费年限 - 包括广东省内和省外所有记录
+    // 计算首次参保时的年龄
+    let age = firstInsuredDate.getFullYear() - birthDate.getFullYear();
+    const monthDiff = firstInsuredDate.getMonth() - birthDate.getMonth();
+    
+    // 调整年龄计算
+    if (monthDiff < 0 || (monthDiff === 0 && firstInsuredDate.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    // 判断条件：男50女40后在非户籍省份首次参保
+    if (userData.gender === 'male') {
+        // 男性：50周岁后
+        if (age >= 50 && record.province !== userData.hukouProvince) {
+            return true;
+        }
+    } else {
+        // 女性：40周岁后
+        if (age >= 40 && record.province !== userData.hukouProvince) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+// 计算广东省内养老金领取地
+// 修改 calculateGuangdongPensionLocation 函数中调用临时账户判断的部分
+function calculateGuangdongPensionLocation(data) {
+    const guangdongRecords = data.guangdongRecords;
+    
+    // 计算总缴费年限 - 包括广东省内和省外所有记录，包括临时账户
     let totalYears = 0;
     let totalMonths = 0;
     const details = [];
+    const temporaryAccounts = []; // 存储临时账户记录
     
-    // 1. 累加广东省内记录
+    // 1. 处理广东省内记录，判断临时账户
     if (guangdongRecords && guangdongRecords.length > 0) {
         guangdongRecords.forEach(record => {
-            totalYears += record.years;
-            totalMonths += record.months;
-            details.push({
-                province: '广东省',
-                years: record.years,
-                months: record.months,
-                remark: `广东省内参保 - ${record.city}`
-            });
-        });
-    }
+            // 判断是否为临时账户（使用广东省内城市判断）
+            const isTemporary = isTemporaryAccountForGuangdongCity(record, data);
+            
+if (isTemporary) {
+    // 临时账户，不参与确定领取地，但计入总缴费年限
+    temporaryAccounts.push({
+        location: record.city, // 统一使用location字段
+        years: record.years,
+        months: record.months,
+        firstDate: record.firstDate, // 统一使用firstDate字段
+        remark: '临时账户（不参与确定领取地，但计入总缴费年限）'
+    });
     
-    // 2. 累加其他省份记录（如果有的话）
-    if (data.insuredRecords && data.insuredRecords.length > 0) {
-        data.insuredRecords.forEach(record => {
-            // 只累加非广东省的记录（避免重复计算）
-            if (record.province !== '广东省') {
+    // 临时账户的缴费年限也要计入总缴费年限
+    totalYears += record.years;
+    totalMonths += record.months;
+}else {
+                // 非临时账户，参与缴费年限计算
                 totalYears += record.years;
                 totalMonths += record.months;
                 details.push({
-                    province: record.province,
+                    province: '广东省',
                     years: record.years,
                     months: record.months,
-                    remark: '跨省参保'
+                    remark: `广东省内参保 - ${record.city}`
                 });
+            }
+        });
+    }
+    
+    // 2. 处理其他省份记录，也要判断临时账户
+    if (data.insuredRecords && data.insuredRecords.length > 0) {
+        data.insuredRecords.forEach(record => {
+            if (record.province !== '广东省') {
+                // 判断是否为临时账户（使用普通省份判断）
+                const isTemporary = isTemporaryAccountForProvince(record, data);
+                
+                if (isTemporary) {
+                    // 临时账户，不参与确定领取地，但计入总缴费年限
+                    temporaryAccounts.push({
+                        province: record.province,
+                        years: record.years,
+                        months: record.months,
+                        date: record.date,
+                        remark: '临时账户（不参与确定领取地，但计入总缴费年限）'
+                    });
+                    
+                    totalYears += record.years;
+                    totalMonths += record.months;
+                } else {
+                    // 非临时账户，参与缴费年限计算
+                    totalYears += record.years;
+                    totalMonths += record.months;
+                    details.push({
+                        province: record.province,
+                        years: record.years,
+                        months: record.months,
+                        remark: '跨省参保'
+                    });
+                }
             }
         });
     }
@@ -1285,15 +1485,74 @@ function calculateGuangdongPensionLocation(data) {
         totalMonths = totalMonths % 12;
     }
     
+    // 确定最后参保地 - 排除临时账户
+    let treatmentCity = '';
+    if (guangdongRecords && guangdongRecords.length > 0) {
+        // 过滤掉临时账户记录
+        const validRecords = guangdongRecords.filter(record => 
+            !isTemporaryAccountForGuangdongCity(record, data)
+        );
+        
+        if (validRecords.length > 0) {
+            // 按最后参保日期排序
+            const sortedRecords = [...validRecords].sort((a, b) => {
+                return new Date(b.lastDate) - new Date(a.lastDate);
+            });
+            
+            treatmentCity = sortedRecords[0].city;
+            
+            // 在详情中添加备注
+            details.forEach(detail => {
+                if (detail.province === '广东省' && detail.remark.includes(treatmentCity)) {
+                    detail.remark += ' (最后参保地)';
+                }
+            });
+        } else {
+            // 如果所有广东记录都是临时账户，则回户籍地
+            treatmentCity = data.hukouCity;
+        }
+    }
+    
     return {
         treatmentLocation: '广东省',
-        treatmentCity: lastRecord.city,
+        treatmentCity: treatmentCity,
         totalYears: totalYears,
         totalMonths: totalMonths,
-        insuredDetails: details
+        insuredDetails: details,
+        temporaryAccounts: temporaryAccounts
     };
 }
 
+// 新增函数：判断是否为临时账户
+// 修改原有的 isTemporaryAccount 函数名，明确其只用于广东省内城市判断
+function isTemporaryAccountForGuangdongCity(record, userData) {
+    const firstInsuredDate = new Date(record.firstDate);
+    const birthDate = new Date(userData.birthDate);
+    
+    // 计算首次参保时的年龄
+    let age = firstInsuredDate.getFullYear() - birthDate.getFullYear();
+    const monthDiff = firstInsuredDate.getMonth() - birthDate.getMonth();
+    
+    // 调整年龄计算
+    if (monthDiff < 0 || (monthDiff === 0 && firstInsuredDate.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    // 判断条件：男50女40后在非户籍城市首次参保
+    if (userData.gender === 'male') {
+        // 男性：50周岁后
+        if (age >= 50 && record.city !== userData.hukouCity) {
+            return true;
+        }
+    } else {
+        // 女性：40周岁后
+        if (age >= 40 && record.city !== userData.hukouCity) {
+            return true;
+        }
+    }
+    
+    return false;
+}
      
     // 计算退休信息
     function calculateRetirementInfo(data) {
@@ -1523,7 +1782,45 @@ function calculateGuangdongPensionLocation(data) {
                 </tr>
             `;
             table.appendChild(thead);
-            
+            // 在 displayResult 函数中，在显示参保信息详情后添加临时账户信息显示
+// 更新显示代码，使用统一字段
+if (result.temporaryAccounts && result.temporaryAccounts.length > 0) {
+    const tempDiv = document.createElement('div');
+    tempDiv.className = 'result-item temp-account';
+    tempDiv.innerHTML = '<div class="section-title">临时账户信息</div>';
+    
+    const tempTable = document.createElement('table');
+    tempTable.className = 'info-table';
+    
+    // 表头
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+        <tr>
+            <th>参保地</th>
+            <th>累计缴费年限</th>
+            <th>首次参保日期</th>
+            <th>备注</th>
+        </tr>
+    `;
+    tempTable.appendChild(thead);
+    
+    // 表体
+    const tbody = document.createElement('tbody');
+    result.temporaryAccounts.forEach(account => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${account.location}</td>
+            <td>${account.years}年${account.months}个月</td>
+            <td>${account.firstDate}</td>
+            <td>${account.remark}</td>
+        `;
+        tbody.appendChild(row);
+    });
+    tempTable.appendChild(tbody);
+    
+    tempDiv.appendChild(tempTable);
+    resultContent.appendChild(tempDiv);
+}
             // 表体
             const tbody = document.createElement('tbody');
             result.insuredDetails.forEach(detail => {
@@ -1540,7 +1837,7 @@ function calculateGuangdongPensionLocation(data) {
             detailsDiv.appendChild(table);
             resultContent.appendChild(detailsDiv);
         }
-        
+
         // 3. 退休年龄
         const retirementDiv = document.createElement('div');
         retirementDiv.className = 'result-item';
