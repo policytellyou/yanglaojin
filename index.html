@@ -792,28 +792,33 @@
             });
             
             // 提交广东省信息
-            submitGuangdongInfoBtn.addEventListener('click', function() {
-                if (!validateGuangdongRecords()) {
-                    return;
-                }
-                
-                // 收集广东省内参保记录
-                userData.guangdongRecords = collectGuangdongRecords();
-                
-                // 关闭模态框
-                guangdongModal.style.display = 'none';
-                isGuangdongModalOpen = false;
-                
-                // 计算养老金领取地
-                pensionResult = calculatePensionLocation(userData);
-                
-                // 显示结果
-                displayResult(pensionResult);
-                
-                // 切换到第三步
-                switchStep(1, 3);
-            });
-            
+submitGuangdongInfoBtn.addEventListener('click', function() {
+    if (!validateGuangdongRecords()) {
+        return;
+    }
+    
+    // 收集广东省内参保记录
+    userData.guangdongRecords = collectGuangdongRecords();
+    
+    // 如果是从第一步直接跳转过来的，需要收集普通参保记录
+    if (!userData.insuredRecords) {
+        userData.insuredRecords = [];
+    }
+    
+    // 计算养老金领取地
+    pensionResult = calculatePensionLocation(userData);
+    
+    // 关闭模态框
+    guangdongModal.style.display = 'none';
+    isGuangdongModalOpen = false;
+    
+    // 显示结果
+    displayResult(pensionResult);
+    
+    // 切换到第三步
+    switchStep(1, 3);
+});
+                     
             // 关闭早期结果模态框
             closeEarlyResultModalBtn.addEventListener('click', function() {
                 earlyResultModal.style.display = 'none';
@@ -1155,6 +1160,140 @@
                 
                 return records;
             }
+           // 显示广东省信息采集模态框
+function showGuangdongModal() {
+    guangdongModal.style.display = 'flex';
+    isGuangdongModalOpen = true;
+    
+    // 清空之前的记录
+    guangdongRecords.innerHTML = '';
+    guangdongRecordCount = 0;
+    
+    // 自动添加一条记录
+    addGuangdongRecord();
+}
+// 计算养老金领取地
+function calculatePensionLocation(data) {
+    // 如果有广东省内记录，使用广东省逻辑
+    if (data.guangdongRecords && data.guangdongRecords.length > 0) {
+        return calculateGuangdongPensionLocation(data);
+    }
+    
+    // 普通逻辑
+    let totalYears = 0;
+    let totalMonths = 0;
+    const details = [];
+    
+    // 计算总缴费年限
+    data.insuredRecords.forEach(record => {
+        totalYears += record.years;
+        totalMonths += record.months;
+        details.push({
+            province: record.province,
+            years: record.years,
+            months: record.months,
+            remark: ''
+        });
+    });
+    
+    // 处理月份进位
+    if (totalMonths >= 12) {
+        totalYears += Math.floor(totalMonths / 12);
+        totalMonths = totalMonths % 12;
+    }
+    
+    // 确定待遇领取地
+    let treatmentLocation = data.hukouProvince; // 默认户籍地
+    
+    // 查找是否有缴费满10年的地方
+    const fullTenYearsRecords = data.insuredRecords.filter(record => 
+        record.years >= 10 || (record.years === 9 && record.months >= 0)
+    );
+    
+    if (fullTenYearsRecords.length > 0) {
+        // 有缴费满10年的地方，取最后一个
+        treatmentLocation = fullTenYearsRecords[fullTenYearsRecords.length - 1].province;
+        
+        // 更新备注
+        details.forEach(detail => {
+            if (detail.province === treatmentLocation) {
+                detail.remark = '最后缴费满10年的参保地';
+            }
+        });
+    } else {
+        // 没有缴费满10年的地方，使用户籍地
+        details.forEach(detail => {
+            if (detail.province === treatmentLocation) {
+                detail.remark = '户籍所在地';
+            }
+        });
+    }
+    
+    return {
+        treatmentLocation: treatmentLocation,
+        treatmentCity: null,
+        totalYears: totalYears,
+        totalMonths: totalMonths,
+        insuredDetails: details
+    };
+}
+// 计算广东省内养老金领取地
+function calculateGuangdongPensionLocation(data) {
+    // 广东省内逻辑：取最后参保地
+    const guangdongRecords = data.guangdongRecords;
+    let lastRecord = guangdongRecords[guangdongRecords.length - 1];
+    
+    // 计算总缴费年限 - 包括广东省内和省外所有记录
+    let totalYears = 0;
+    let totalMonths = 0;
+    const details = [];
+    
+    // 1. 累加广东省内记录
+    if (guangdongRecords && guangdongRecords.length > 0) {
+        guangdongRecords.forEach(record => {
+            totalYears += record.years;
+            totalMonths += record.months;
+            details.push({
+                province: '广东省',
+                years: record.years,
+                months: record.months,
+                remark: `广东省内参保 - ${record.city}`
+            });
+        });
+    }
+    
+    // 2. 累加其他省份记录（如果有的话）
+    if (data.insuredRecords && data.insuredRecords.length > 0) {
+        data.insuredRecords.forEach(record => {
+            // 只累加非广东省的记录（避免重复计算）
+            if (record.province !== '广东省') {
+                totalYears += record.years;
+                totalMonths += record.months;
+                details.push({
+                    province: record.province,
+                    years: record.years,
+                    months: record.months,
+                    remark: '跨省参保'
+                });
+            }
+        });
+    }
+    
+    // 处理月份进位
+    if (totalMonths >= 12) {
+        totalYears += Math.floor(totalMonths / 12);
+        totalMonths = totalMonths % 12;
+    }
+    
+    return {
+        treatmentLocation: '广东省',
+        treatmentCity: lastRecord.city,
+        totalYears: totalYears,
+        totalMonths: totalMonths,
+        insuredDetails: details
+    };
+}
+
      
     // 计算退休信息
     function calculateRetirementInfo(data) {
