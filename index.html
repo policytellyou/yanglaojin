@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>养老金领取地测算工具</title>
+    <title>养老金领取地测算规划工具</title>
     <style>
         * {
             box-sizing: border-box;
@@ -397,6 +397,7 @@
         
         .policy-section {
             margin-bottom: 20px;
+             font-size: 14px; /* 新增此行 */
         }
         
         .policy-section h4 {
@@ -434,7 +435,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>养老金领取地测算工具</h1>
+        <h1>养老金领取地测算规划工具+延缴地测算工具</h1>
                 <div class="step-indicator">
             <div class="step-item active" id="step1-indicator">
                 <div class="step-number">1</div>
@@ -593,6 +594,8 @@
                 <button type="button" id="nextToStep2" class="btn-next">下一步</button>
             </form>
         </div>
+
+
        <!-- 在HTML部分添加累计缴费年限模态框 -->
 <div class="modal" id="cumulativeYearsModal">
     <div class="modal-content">
@@ -613,6 +616,87 @@
         </div>
     </div>
 </div> 
+
+<!-- 目标养老金领取地模态框 -->
+<div class="modal" id="targetLocationModal">
+    <div class="modal-content">
+        <h2>目标养老金领取地</h2>
+        <p>由于您距离退休年龄还有一段时间，请选择您希望领取养老金的目标地区。</p>
+        
+        <div class="form-group">
+            <label for="targetProvince">目标养老金领取地（省份）</label>
+            <select id="targetProvince" name="targetProvince" required>
+                <option value="">-- 请选择省份 --</option>
+                <option value="北京市">北京市</option>
+                <option value="天津市">天津市</option>
+                <option value="河北省">河北省</option>
+                <option value="山西省">山西省</option>
+                <option value="内蒙古自治区">内蒙古自治区</option>
+                <option value="辽宁省">辽宁省</option>
+                <option value="吉林省">吉林省</option>
+                <option value="黑龙江省">黑龙江省</option>
+                <option value="上海市">上海市</option>
+                <option value="江苏省">江苏省</option>
+                <option value="浙江省">浙江省</option>
+                <option value="安徽省">安徽省</option>
+                <option value="福建省">福建省</option>
+                <option value="江西省">江西省</option>
+                <option value="山东省">山东省</option>
+                <option value="河南省">河南省</option>
+                <option value="湖北省">湖北省</option>
+                <option value="湖南省">湖南省</option>
+                <option value="广东省">广东省</option>
+                <option value="广西壮族自治区">广西壮族自治区</option>
+                <option value="海南省">海南省</option>
+                <option value="重庆市">重庆市</option>
+                <option value="四川省">四川省</option>
+                <option value="贵州省">贵州省</option>
+                <option value="云南省">云南省</option>
+                <option value="西藏自治区">西藏自治区</option>
+                <option value="陕西省">陕西省</option>
+                <option value="甘肃省">甘肃省</option>
+                <option value="青海省">青海省</option>
+                <option value="宁夏回族自治区">宁夏回族自治区</option>
+                <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
+            </select>
+            <div class="error" id="targetProvinceError">请选择目标养老金领取地省份</div>
+        </div>
+
+        <div class="form-group" id="targetCityGroup" style="display: none;">
+            <label for="targetCity">目标养老金领取地（城市）</label>
+            <select id="targetCity" name="targetCity">
+                <option value="">-- 请选择城市 --</option>
+                <option value="广州市">广州市</option>
+                <option value="深圳市">深圳市</option>
+                <option value="珠海市">珠海市</option>
+                <option value="汕头市">汕头市</option>
+                <option value="佛山市">佛山市</option>
+                <option value="韶关市">韶关市</option>
+                <option value="湛江市">湛江市</option>
+                <option value="肇庆市">肇庆市</option>
+                <option value="江门市">江门市</option>
+                <option value="茂名市">茂名市</option>
+                <option value="惠州市">惠州市</option>
+                <option value="梅州市">梅州市</option>
+                <option value="汕尾市">汕尾市</option>
+                <option value="河源市">河源市</option>
+                <option value="阳江市">阳江市</option>
+                <option value="清远市">清远市</option>
+                <option value="东莞市">东莞市</option>
+                <option value="中山市">中山市</option>
+                <option value="潮州市">潮州市</option>
+                <option value="揭阳市">揭阳市</option>
+                <option value="云浮市">云浮市</option>
+            </select>
+            <div class="error" id="targetCityError">请选择目标养老金领取地城市</div>
+        </div>
+        
+        <div class="button-group">
+            <button type="button" id="closeTargetLocationModal" class="btn-back">取消</button>
+            <button type="button" id="submitTargetLocation" class="btn-next">确定</button>
+        </div>
+    </div>
+</div>
 
 <!-- 在现有模态框后面添加这个模态框 -->
 <div class="modal" id="multipleProvincesModal">
@@ -766,7 +850,67 @@ let retirementInfo = {};
 let pensionResult = {};
 let isGuangdongModalOpen = false;
 let isFromCumulativeModal = false;
+// 目标养老金领取地模态框
+const targetLocationModal = document.getElementById('targetLocationModal');
+const closeTargetLocationModalBtn = document.getElementById('closeTargetLocationModal');
+const submitTargetLocationBtn = document.getElementById('submitTargetLocation');
 
+// 显示目标养老金领取地模态框
+function showTargetLocationModal() {
+    targetLocationModal.style.display = 'flex';
+    
+    // 清空之前的选择
+    document.getElementById('targetProvince').value = '';
+    document.getElementById('targetCity').value = '';
+    document.getElementById('targetCityGroup').style.display = 'none';
+    
+    // 隐藏错误信息
+    document.getElementById('targetProvinceError').style.display = 'none';
+    document.getElementById('targetCityError').style.display = 'none';
+}
+
+// 关闭目标养老金领取地模态框
+closeTargetLocationModalBtn.addEventListener('click', function() {
+    targetLocationModal.style.display = 'none';
+});
+
+// 提交目标养老金领取地信息
+submitTargetLocationBtn.addEventListener('click', function() {
+    const targetProvince = document.getElementById('targetProvince').value;
+    const targetCity = document.getElementById('targetCity').value;
+    
+    // 验证目标养老金领取地
+    let isValid = true;
+    
+    if (!targetProvince) {
+        document.getElementById('targetProvinceError').style.display = 'block';
+        isValid = false;
+    } else {
+        document.getElementById('targetProvinceError').style.display = 'none';
+    }
+    
+    if (targetProvince === '广东省' && !targetCity) {
+        document.getElementById('targetCityError').style.display = 'block';
+        isValid = false;
+    } else {
+        document.getElementById('targetCityError').style.display = 'none';
+    }
+    
+    if (!isValid) {
+        return;
+    }
+    
+    // 保存目标养老金领取地信息
+    userData.targetProvince = targetProvince;
+    userData.targetCity = targetCity;
+    
+    // 关闭模态框
+    targetLocationModal.style.display = 'none';
+    
+    // 自动添加一条当前参保省记录并进入第二步
+    addRecordWithProvince(userData.currentProvince);
+    switchStep(1, 2);
+});
             
             // 性别选择变化监听
             genderRadios.forEach(radio => {
@@ -787,6 +931,17 @@ let isFromCumulativeModal = false;
             hukouCityGroup.style.display = 'none';
         }
     });
+
+    // 目标省份变化监听
+const targetProvince = document.getElementById('targetProvince');
+targetProvince.addEventListener('change', function() {
+    const targetCityGroup = document.getElementById('targetCityGroup');
+    if (this.value === '广东省') {
+        targetCityGroup.style.display = 'block';
+    } else {
+        targetCityGroup.style.display = 'none';
+    }
+});
     
     // 页面加载时检查户籍省份状态
     const hukouCityGroup = document.getElementById('hukouCityGroup');
@@ -806,13 +961,14 @@ nextToStep2Btn.addEventListener('click', function() {
     
     // 收集基本信息
     const formData = new FormData(basicInfoForm);
-    userData = {
-        birthDate: formData.get('birthDate'),
-        gender: formData.get('gender'),
-        hukouProvince: formData.get('hukouProvince'),
-        hukouCity: formData.get('hukouCity'),
-        currentProvince: formData.get('currentProvince')
-    };
+userData = {
+    birthDate: formData.get('birthDate'),
+    gender: formData.get('gender'),
+    hukouProvince: formData.get('hukouProvince'),
+    hukouCity: formData.get('hukouCity'),
+    currentProvince: formData.get('currentProvince'),
+
+};
     
     // 如果是女性，收集岗位性质
     if (userData.gender === 'female') {
@@ -828,16 +984,17 @@ nextToStep2Btn.addEventListener('click', function() {
     retirementInfo = calculateRetirementInfo(userData);
     console.log('退休信息:', retirementInfo);
     
-    // 判断五种情况
-    // 情况1：距离退休年龄超过6个月
-    if (retirementInfo.monthsToRetirement > 6) {
-        console.log('情况1：距离退休超过6个月');
-        showEarlyResult();
+        // 判断情况
+    // 情况1：距离退休年龄超过2个月 - 显示目标养老金领取地模态框
+    if (retirementInfo.monthsToRetirement > 2) {
+        console.log('情况1：距离退休超过2个月，显示目标养老金领取地模态框');
+        showTargetLocationModal();
         return;
     }
     
-    // 情况2：距离退休年龄小于6个月且户籍地=参保地=广东省
-    if (retirementInfo.monthsToRetirement <= 6 && 
+    // 其他情况（距离退休2个月以内）按原有逻辑处理
+    // 情况2：距离退休年龄小于等于2个月且户籍地=参保地=广东省
+    if (retirementInfo.monthsToRetirement <= 2 && 
         userData.hukouProvince === '广东省' && 
         userData.currentProvince === '广东省') {
         console.log('情况2：显示广东模态框');
@@ -845,8 +1002,8 @@ nextToStep2Btn.addEventListener('click', function() {
         return;
     }
     
-    // 情况5：距离退休年龄小于6个月且户籍地=参保地≠广东省
-    if (retirementInfo.monthsToRetirement <= 6 && 
+    // 情况5：距离退休年龄小于等于2个月且户籍地=参保地≠广东省
+    if (retirementInfo.monthsToRetirement <= 2 && 
         userData.hukouProvince === userData.currentProvince && 
         userData.currentProvince !== '广东省') {
         console.log('情况5：显示累计缴费年限模态框');
@@ -854,7 +1011,7 @@ nextToStep2Btn.addEventListener('click', function() {
         return;
     }
     
-    // 情况3和4：距离退休年龄小于6个月且户籍地≠参保地，或户籍地=参保地=广东以外的其他情况
+    // 情况3和4：距离退休年龄小于等于2个月且户籍地≠参保地，或户籍地=参保地=广东以外的其他情况
     console.log('情况3或4：进入第二步');
     // 自动添加一条当前参保省记录
     addRecordWithProvince(userData.currentProvince);
@@ -862,7 +1019,7 @@ nextToStep2Btn.addEventListener('click', function() {
     // 切换到第二步
     switchStep(1, 2);
 });
-            
+               
             // 上一步到第一步
             backToStep1Btn.addEventListener('click', function() {
                 switchStep(2, 1);
@@ -1248,6 +1405,8 @@ restartCalcBtn.addEventListener('click', function() {
     const hukouCity = document.getElementById('hukouCity');
     hukouCityGroup.style.display = 'none';
     hukouCity.value = '';
+
+
     
     // 隐藏岗位性质选择
     jobTypeGroup.style.display = 'none';
@@ -1481,6 +1640,9 @@ function validateBasicInfo() {
     
     return isValid;  // 确保这个return语句在函数最后
 }
+
+
+
 
 // 添加带有默认省份的参保记录
 function addRecordWithProvince(province) {
@@ -2558,9 +2720,159 @@ function validateGuangdongRecords() {
     
     return isValid;
 }
+
+// 显示规划方案
+function displayPlanResult() {
+    // 清空结果区域
+    resultContent.innerHTML = '';
+
+    // 计算当前年龄
+    const birthDate = new Date(userData.birthDate);
+    const now = new Date();
+    let age = now.getFullYear() - birthDate.getFullYear();
+    const monthDiff = now.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
+    // 临界年龄
+    const criticalAge = userData.gender === 'male' ? 50 : 40;
+    const isOverCriticalAge = age >= criticalAge;
+
+    // 显示退休信息
+    const retirementDiv = document.createElement('div');
+    retirementDiv.className = 'result-item';
+    retirementDiv.innerHTML = `
+        <div class="section-title">退休信息</div>
+        <div>您的退休年龄：<span class="highlight">${retirementInfo.retirementAgeYears}岁${retirementInfo.retirementAgeMonths > 0 ? retirementInfo.retirementAgeMonths + '个月' : ''}</span></div>
+        <div>预计退休时间：<span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span></div>
+        <div>当前年龄：<span class="highlight">${age}岁</span></div>
+        <div>临界年龄（${userData.gender === 'male' ? '男50岁' : '女40岁'}）：<span class="highlight">${isOverCriticalAge ? '已超过' : '未超过'}</span></div>
+    `;
+    resultContent.appendChild(retirementDiv);
+
+    // 显示目标养老金领取地
+    const targetDiv = document.createElement('div');
+    targetDiv.className = 'result-item';
+    let targetLocationText = userData.targetProvince;
+    if (userData.targetProvince === '广东省' && userData.targetCity) {
+        targetLocationText += `（${userData.targetCity}）`;
+    }
+    targetDiv.innerHTML = `
+        <div class="section-title">目标养老金领取地</div>
+        <div>您选择的目标养老金领取地：<span class="highlight">${targetLocationText}</span></div>
+    `;
+    resultContent.appendChild(targetDiv);
+
+// 根据情况显示规划方案
+const planDiv = document.createElement('div');
+planDiv.className = 'result-item final-result';
+
+// 判断目标地是否等于户籍地（广东省内需要比较城市，其他省份比较省份）
+let isTargetSameAsHukou = false;
+
+if (userData.targetProvince === '广东省' && userData.hukouProvince === '广东省') {
+    // 广东省内：比较城市
+    isTargetSameAsHukou = (userData.targetCity === userData.hukouCity);
+} else {
+    // 其他省份：比较省份
+    isTargetSameAsHukou = (userData.targetProvince === userData.hukouProvince);
+}
+
+if (isTargetSameAsHukou) {
+    // 目标地 = 户籍地
+    if (userData.targetProvince === '广东省') {
+        // 广东省内
+        planDiv.innerHTML = `
+            <div class="section-title">规划方案</div>
+            <div>您的目标养老金领取地为户籍城市，建议：</div>
+            <div class="highlight">退休前（建议至少1年）需在户籍城市【${userData.hukouCity}】参保直到退休时间点。</div>
+        `;
+    } else {
+        // 其他省份
+        planDiv.innerHTML = `
+            <div class="section-title">规划方案</div>
+            <div>您的目标养老金领取地为户籍省，建议：</div>
+            <div class="highlight">退休前（建议至少1年）需在户籍省【${userData.hukouProvince}】参保直到退休时间点。</div>
+        `;
+    }
+} else {
+    // 目标地 ≠ 户籍地
+    if (userData.targetProvince === '广东省') {
+        // 广东省内城市特殊处理
+        if (!isOverCriticalAge) {
+            // 未满临界年龄
+            planDiv.innerHTML = `
+                <div class="section-title">规划方案</div>
+                <div>您的目标养老金领取地为非户籍城市，且您当前未满${criticalAge}岁，建议：</div>
+                          <div>1. <span class="highlight">在${criticalAge}岁前在目标城市【${userData.targetCity}】首次参保建立一般账户</span></div>
+                <div>2. <span class="highlight">退休前（建议至少1年）在目标城市【${userData.targetCity}】参保直到退休</span></div>
+            `;
+        } else {
+            // 已满临界年龄
+            // 检查是否在临界年龄前在目标城市参保
+            const hasInsuredBeforeCriticalAge = checkInsuredBeforeCriticalAge(userData.targetCity, criticalAge);
+            if (hasInsuredBeforeCriticalAge) {
+                planDiv.innerHTML = `
+                    <div class="section-title">规划方案</div>
+                    <div>您的目标养老金领取地为非户籍城市，且您已在${criticalAge}岁前在目标城市参保，建议：</div>
+                                  <div><span class="highlight">退休前（建议至少1年）在目标城市【${userData.targetCity}】参保直到退休</span></div>
+                `;
+            } else {
+                planDiv.innerHTML = `
+                    <div class="section-title">规划方案</div>
+                    <div class="not-satisfy-requirement">您的目标养老金领取地为非户籍城市，但您未在${criticalAge}岁前在目标城市参保，无法在目标城市领取养老金，因为账户为临时账户。</div>
+                `;
+            }
+        }
+        } else {
+            // 其他省份
+            if (!isOverCriticalAge) {
+                // 未满临界年龄
+                planDiv.innerHTML = `
+                    <div class="section-title">规划方案</div>
+                    <div>您的目标养老金领取地为非户籍省，且您当前未满${criticalAge}岁，建议：</div>
+                                       <div>1. <span class="highlight">在${criticalAge}岁前在目标省【${userData.targetProvince}】首次参保建立一般账户</span></div>
+                    <div>2. <span class="highlight">退休前（建议至少1年）在目标省【${userData.targetProvince}】参保直到退休，且在目标省缴满10年以上</span></div>
+                `;
+            } else {
+                // 已满临界年龄
+                const hasInsuredBeforeCriticalAge = checkInsuredBeforeCriticalAge(userData.targetProvince, criticalAge);
+                if (hasInsuredBeforeCriticalAge) {
+                    planDiv.innerHTML = `
+                        <div class="section-title">规划方案</div>
+                        <div>您的目标养老金领取地为非户籍省，且您已在${criticalAge}岁前在目标省参保，建议：</div>
+                                                <div> <span class="highlight">退休前（建议至少1年）在目标省【${userData.targetProvince}】参保直到退休，且在目标省缴满10年以上</span></div>
+                    `;
+                } else {
+                    planDiv.innerHTML = `
+                        <div class="section-title">规划方案</div>
+                        <div class="not-satisfy-requirement">您的目标养老金领取地为非户籍省，但您未在${criticalAge}岁前在目标省参保，无法在目标省领取养老金，因为该账户为临时账户。</div>
+                    `;
+                }
+            }
+        }
+    }
+    
+    resultContent.appendChild(planDiv);
+}
+
+// 检查是否在临界年龄前在目标地参保
+function checkInsuredBeforeCriticalAge(targetLocation, criticalAge) {
+    // 这里需要根据参保记录判断
+    // 临时返回 false，您需要根据实际参保记录实现这个逻辑
+    return false;
+}
+
     // 显示结果
 // 显示结果
 function displayResult(result) {
+    // 如果距离退休超过2个月，显示规划方案，否则显示原有测算结果
+    if (retirementInfo.monthsToRetirement > 2) {
+        displayPlanResult();
+        return;
+    }
+
         // 确保只显示第三步
     step1.classList.remove('active');
     step2.classList.remove('active');
@@ -2740,7 +3052,7 @@ if (result.insuredDetails.length > 0 || (result.temporaryAccounts && result.temp
             
             // 如果户籍市没有参保记录，在备注中添加说明
             if (!hasHukouCityRecord) {
-                const hukouCityRemark = `${userData.hukouCity}-0年0个月-户籍所在地（从未参保）`;
+                const hukouCityRemark = `${userData.hukouCity}-0年0个月-不存在一般账户记录，返回户籍地退休`;
                 
                 // 检查是否已经存在相同的备注，避免重复
                 const existingRemark = guangdongGroup.cityRemarks.find(remark => 
@@ -2763,104 +3075,121 @@ if (result.insuredDetails.length > 0 || (result.temporaryAccounts && result.temp
         }
     });
     
-    // 生成表格行 - 每个省份一行
-    Object.values(provinceGroups).forEach(group => {
-        const row = document.createElement('tr');
+// 生成表格行 - 每个省份一行
+Object.values(provinceGroups).forEach(group => {
+    const row = document.createElement('tr');
+    
+    let remarkText = '';
+    
+    // 处理备注信息
+    if (group.province === '广东省' && group.cityRemarks.length > 0) {
+        // 广东省：按城市罗列信息，每个城市换行显示
+        // 这里需要重新生成城市备注，按照新要求
+        const newCityRemarks = [];
         
-        let remarkText = '';
+        group.cityRemarks.forEach(remark => {
+            // 解析原有的备注信息
+            const parts = remark.split('-');
+            if (parts.length >= 3) {
+                const city = parts[0];
+                const yearsMonths = parts[1];
+                
+                // 判断是否为待遇领取城市
+                if (result.treatmentCity === city) {
+                    // 待遇领取城市
+                    // 检查是否有一般账户记录
+                    const hasGeneralAccount = result.insuredDetails.some(detail => 
+                        detail.province === '广东省' && detail.city === city
+                    );
+                    
+                    if (hasGeneralAccount) {
+                        newCityRemarks.push(`${city}-${yearsMonths}-一般账户且最后参保地，可领取`);
+                    } else {
+                        // 没有一般账户记录，返回户籍地退休
+                        newCityRemarks.push(`${city}-${yearsMonths}-不存在一般账户记录，返回户籍地退休`);
+                    }
+                } else {
+                    // 非待遇领取城市
+                    // 检查是否为临时账户
+                    const isTemporary = result.temporaryAccounts && 
+                        result.temporaryAccounts.some(acc => 
+                            acc.location === '广东省' && acc.city === city
+                        );
+                    
+                    if (isTemporary) {
+                        newCityRemarks.push(`${city}-${yearsMonths}-临时账户，不可领取`);
+                    } else {
+                        newCityRemarks.push(`${city}-${yearsMonths}-一般账户但非最后参保，不可领取`);
+                    }
+                }
+            } else {
+                // 无法解析的备注，保持原样
+                newCityRemarks.push(remark);
+            }
+        });
         
-        // 处理备注信息
-        if (group.province === '广东省' && group.cityRemarks.length > 0) {
-            // 广东省：按城市罗列信息，每个城市换行显示
-            remarkText = group.cityRemarks.join('<br>');
-        } else {
-// 其他省份：添加详细的可领取/不可领取原因说明
-const remarks = [];
-
+        remarkText = newCityRemarks.join('<br>');
+    } else {
+        // 其他省份：保持原有逻辑
+        const remarks = [];
+        
+        // 判断是否为待遇领取地
 // 判断是否为待遇领取地
 if (result.treatmentLocation === group.province) {
-    // 待遇领取地的情况
-    if (userData.hukouProvince === userData.currentProvince && group.province === userData.hukouProvince) {
-        // 情况1：户籍地=当前参保地
-        remarks.push('可领取：当前参保地即户籍地');
+    // 如果是户籍省且等于当前参保省，修改备注
+    if (userData.hukouProvince === group.province && userData.currentProvince === group.province) {
+        remarks.push('可领取：当前参保地为户籍地');
     } else {
-        // 查找该省份的一般账户记录
-        const generalAccountRecords = result.insuredDetails.filter(detail => 
-            detail.province === group.province
-        );
-        const hasGeneralAccount = generalAccountRecords.length > 0;
-        
-        if (hasGeneralAccount) {
-            // 情况3：存在缴费满10年的参保地
-            remarks.push('可领取：最后缴费满10年的参保地');
-        } else {
-            // 情况2：不存在缴费满10年的一般账户，户籍地兜底
-            remarks.push('可领取：不存在缴费满10年的一般账户，户籍地兜底');
-        }
+        remarks.push('可领取：最后缴费满10年的参保地');
+    }
+} else if (userData.hukouProvince === group.province) {
+    // 判断是否有一般账户记录
+    const hasGeneralAccount = result.insuredDetails.some(detail => 
+        detail.province === group.province
+    );
+    
+    if (hasGeneralAccount) {
+        remarks.push('不可领取：一般账户但非最后缴费满10年地');
+    } else {
+        remarks.push('不可领取：仅临时账户记录');
     }
 } else {
-    // 非待遇领取地的情况
-    if (group.province === userData.hukouProvince) {
-        // 户籍地但不是待遇领取地
-        const hasGeneralAccount = result.insuredDetails.some(detail => 
-            detail.province === group.province
-        );
-        
-        if (hasGeneralAccount) {
-            remarks.push('不可领取：一般账户但非最后缴费满10年地');
-        } else {
-            remarks.push('不可领取：仅临时账户记录');
-        }
+    // 其他省份
+    const hasGeneralAccount = result.insuredDetails.some(detail => 
+        detail.province === group.province
+    );
+    const hasTemporaryAccount = result.temporaryAccounts && 
+        result.temporaryAccounts.some(acc => acc.location === group.province);
+    
+    if (hasGeneralAccount) {
+        remarks.push('不可领取：一般账户但缴费未满10年');
+    } else if (hasTemporaryAccount) {
+        remarks.push('不可领取：临时账户记录');
     } else {
-        // 其他非户籍地省份
-        const hasGeneralAccount = result.insuredDetails.some(detail => 
-            detail.province === group.province
-        );
-        const hasTemporaryAccount = result.temporaryAccounts && 
-            result.temporaryAccounts.some(acc => acc.location === group.province);
-        
-        // 判断该省份是否缴费满10年
-        const provinceRecords = result.insuredDetails.filter(detail => 
-            detail.province === group.province
-        );
-        let totalMonths = 0;
-        provinceRecords.forEach(record => {
-            totalMonths += record.years * 12 + record.months;
-        });
-        const isFullTenYears = totalMonths >= 120;
-        
-        if (hasGeneralAccount) {
-            if (isFullTenYears) {
-                remarks.push('不可领取：已缴满10年但非最后参保地');
-            } else {
-                remarks.push('不可领取：未缴满10年');
-            }
-        } else if (hasTemporaryAccount) {
-            remarks.push('不可领取：临时账户');
-        } else {
-            remarks.push('不可领取：非户籍地且无有效缴费记录');
-        }
+        remarks.push('不可领取：非户籍地且无有效缴费记录');
     }
 }
 
-// 检查是否有临时账户记录
-const hasTemporary = result.temporaryAccounts && 
-    result.temporaryAccounts.some(acc => acc.location === group.province);
-if (hasTemporary) {
-    remarks.push('包含临时账户记录');
-}
-
-remarkText = remarks.join('<br>');
+        
+        // 检查是否有临时账户记录
+        const hasTemporary = result.temporaryAccounts && 
+            result.temporaryAccounts.some(acc => acc.location === group.province);
+        if (hasTemporary) {
+            remarks.push('包含临时账户记录');
         }
         
-        row.innerHTML = `
-            <td>${group.province}</td>
-            <td>${group.totalYears}年${group.totalMonths}个月</td>
-            <td>${remarkText}</td>
-        `;
-        
-        tbody.appendChild(row);
-    });
+        remarkText = remarks.join('<br>');
+    }
+    
+    row.innerHTML = `
+        <td>${group.province}</td>
+        <td>${group.totalYears}年${group.totalMonths}个月</td>
+        <td>${remarkText}</td>
+    `;
+    
+    tbody.appendChild(row);
+});
+
     
     table.appendChild(tbody);
     detailsDiv.appendChild(table);
